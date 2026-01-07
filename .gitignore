@@ -1,11 +1,31 @@
+### [Spring Boot & Build Tools] ###
 HELP.md
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### STS ###
+### [Java & Compiled Files] ###
+*.class
+*.log
+*.jar
+*.war
+*.zip
+*.tar.gz
+hs_err_pid*
+replay_pid*
+
+### [IntelliJ IDEA] ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+/out/
+
+### [VS Code] ###
+.vscode/
+
+### [STS / Eclipse] ###
 .apt_generated
 .classpath
 .factorypath
@@ -14,24 +34,11 @@ build/
 .springBeans
 .sts4-cache
 bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
 
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
+### [MacOS / Windows system files] ###
+.DS_Store
+Thumbs.db
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
-### VS Code ###
-.vscode/
+### [Custom Settings] ###
+# 나중에 DB 정보나 API Key가 들어있는 설정 파일을 숨길 때 사용하세요.
+# application-secret.properties

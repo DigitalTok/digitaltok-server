@@ -1,9 +1,12 @@
 package com.digital_tok.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+
+import java.time.LocalDateTime;
 
 public class UserResponseDTO {
 
@@ -26,9 +29,32 @@ public class UserResponseDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class LoginResultDto {
+
+        /**
+         * grantType 예시 및 특징
+         * authorization_code: 가장 많이 사용되며, 사용자 로그인 후 받은 인가 코드(code)를 이용해 토큰을 교환하는 방식 (보안 우수).
+         * client_credentials: 사용자가 아닌 클라이언트(서비스) 자체의 자격 증명으로 토큰을 받는 방식 (서비스 간 통신).
+         * password: 사용자 ID와 비밀번호를 직접 입력하여 토큰을 받는 방식 (자체 서비스 내에서만 권장).
+         * refresh_token: 만료된 Access Token 대신 Refresh Token을 사용하여 새로운 Access Token을 발급받는 방식.
+         * implicit: 브라우저 기반 클라이언트(JavaScript)에서 코드 없이 바로 토큰을 받는 방식 (보안 문제로 권장되지 않음).
+         * */
         private String grantType;           // Bearer
         private String accessToken;
         private String refreshToken;
         private Long accessTokenExpiresIn;  // 토큰 만료 시간
+    }
+
+    // 추가: 회원가입, 수정, 탈퇴 등 CUD 작업 후 공통으로 쓸 결과 DTO
+    // 프론트엔드 개발자분들이 필요하다고 하면 추가하면 될듯.
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UserResultDto {
+        @Schema(description = "관련된 회원 ID", example = "1")
+        Long userId;
+
+        @Schema(description = "작업 완료 시각", example = "2026-01-15T14:30:00")
+        LocalDateTime updatedAt;
     }
 }

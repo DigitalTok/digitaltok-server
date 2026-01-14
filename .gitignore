@@ -42,3 +42,19 @@ Thumbs.db
 ### [Custom Settings] ###
 # 나중에 DB 정보나 API Key가 들어있는 설정 파일을 숨길 때 사용하세요.
 # application-secret.properties
+
+### [Security & AWS] ###
+# EC2 접속을 위한 키 파일 (해킹 위험 1순위, 절대 금지)
+*.pem
+
+# 환경변수 설정 파일
+.env
+
+### [Spring Boot Config - Safety] ###
+# 우리가 만들기로 했던 배포용 설정 파일 (실수 방지용)
+src/main/resources/application-prod.yml
+src/main/resources/application-secret.yml
+
+# 혹시 모를 로컬 테스트용 설정 파일들
+application-prod.yml
+application-secret.yml

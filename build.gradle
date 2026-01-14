@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.digital-tok'
-version = '0.0.1-SNAPSHOT'
+version = '1.0.0'
 description = 'E-Ink digital-tok service'
 
 java {
@@ -22,6 +22,11 @@ configurations {
 
 repositories {
 	mavenCentral()
+}
+
+// [추가할 부분 1] 빌드된 jar 파일 이름을 버전 없이 고정
+bootJar {
+	archiveFileName = 'digitalTok.jar'
 }
 
 dependencies {

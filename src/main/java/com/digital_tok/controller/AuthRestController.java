@@ -1,6 +1,8 @@
 package com.digital_tok.controller;
 
+import com.digital_tok.dto.request.AuthRequestDTO;
 import com.digital_tok.dto.request.UserRequestDTO;
+import com.digital_tok.dto.response.AuthResponseDTO;
 import com.digital_tok.dto.response.UserResponseDTO;
 import com.digital_tok.global.apiPayload.ApiResponse;
 import com.digital_tok.global.apiPayload.code.SuccessCode;
@@ -22,11 +24,11 @@ public class AuthRestController {
      */
     @PostMapping("/signup")
     @Operation(summary = "회원가입 API", description = "이메일, 비밀번호, 닉네임 등을 받아 회원을 생성합니다.")
-    public ApiResponse<UserResponseDTO.JoinResultDto> join(@RequestBody UserRequestDTO.JoinDto request) {
+    public ApiResponse<AuthResponseDTO.JoinResultDto> join(@RequestBody AuthRequestDTO.JoinDto request) {
         // TODO: 회원가입 로직 구현
 
         // 일단 더미데이터 넣어둠 (프론트엔드 개발자가 어떤 result를 받을지 알 수 있음)
-        UserResponseDTO.JoinResultDto mockResult = UserResponseDTO.JoinResultDto.builder()
+        AuthResponseDTO.JoinResultDto mockResult = AuthResponseDTO.JoinResultDto.builder()
                 .userId(1L)
                 .email("aoc05230@naver.com")
                 .nickname("아이작")
@@ -43,11 +45,11 @@ public class AuthRestController {
      */
     @PostMapping("/login")
     @Operation(summary = "로그인 API", description = "이메일과 비밀번호로 로그인하여 JWT(Access/Refresh Token)를 발급받습니다.")
-    public ApiResponse<UserResponseDTO.LoginResultDto> login(@RequestBody UserRequestDTO.LoginDto request) {
+    public ApiResponse<AuthResponseDTO.LoginResultDto> login(@RequestBody AuthRequestDTO.LoginDto request) {
         // TODO: 로그인 로직 구현
 
         // 예시 더미데이터2
-        UserResponseDTO.LoginResultDto mockResult = UserResponseDTO.LoginResultDto.builder()
+        AuthResponseDTO.LoginResultDto mockResult = AuthResponseDTO.LoginResultDto.builder()
                 .grantType("grantType")
                 .accessToken("aaaabbbb")
                 .refreshToken("aaaabbbb")
@@ -63,7 +65,7 @@ public class AuthRestController {
      */
     @DeleteMapping("/logout")
     @Operation(summary = "로그아웃 API", description = "서버 DB 또는 Redis에 저장된 Refresh Token을 삭제합니다.")
-    public ApiResponse<String> logout(@RequestBody UserRequestDTO.LogoutDto request) {
+    public ApiResponse<String> logout(@RequestBody AuthRequestDTO.LogoutDto request) {
         // TODO: 로그아웃 로직 구현 (DB에서 RefreshToken 삭제)
 
 

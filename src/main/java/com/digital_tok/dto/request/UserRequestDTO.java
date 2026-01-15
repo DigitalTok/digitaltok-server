@@ -1,5 +1,6 @@
 package com.digital_tok.dto.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -48,5 +49,12 @@ public class UserRequestDTO {
     public static class ChangeEmailDto {
         private String password;    // 필수 (본인 확인용)
         private String newEmail;    // 필수 (변경할 새 이메일)
+    }
+
+    // 7. 닉네임 변경 요청
+    @Getter
+    public static class NicknameUpdateDto {
+        @Schema(description = "변경하려는 새로운 닉네임", example = "새로운 닉네임")
+        private String nickname; // 유저 별명
     }
 }

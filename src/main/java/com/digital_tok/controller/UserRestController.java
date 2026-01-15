@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+
 import static ch.qos.logback.classic.spi.ThrowableProxyVO.build;
 
 @RestController
@@ -35,7 +37,7 @@ public class UserRestController {
                 .accessToken("aaaabbbb")
                 .refreshToken("aaaabbbb")
                 .build();
-        
+
         return ApiResponse.onSuccess(SuccessCode.OK, mockResult); // 응답 껍데기
     }
 
@@ -68,7 +70,7 @@ public class UserRestController {
     public ApiResponse<String> logout(@RequestBody UserRequestDTO.LogoutDto request) {
         // TODO: 로그아웃 로직 구현 (DB에서 RefreshToken 삭제)
 
-        
+
         return ApiResponse.onSuccess(SuccessCode.OK, "로그아웃에 성공했습니다.");
     }
 
@@ -104,5 +106,42 @@ public class UserRestController {
     public ApiResponse<String> changeEmail(@RequestBody UserRequestDTO.ChangeEmailDto request) {
         // TODO: 이메일 변경 로직 구현
         return ApiResponse.onSuccess(SuccessCode.OK, "이메일 주소가 성공적으로 변경되었습니다.");
+    }
+
+    /**
+     * 7. 내 프로필 조회 API
+     */
+    @GetMapping("/me")
+    @Operation(summary = "내 프로필 조회 API", description = "로그인한 유저의 프로필 정보를 반환합니다.")
+    public ApiResponse<UserResponseDTO.MyProfileDto> getMyProfile() {
+        // TODO: 실제 서비스 로직 구현 필요 (더미 데이터 반환)
+        UserResponseDTO.MyProfileDto profile = UserResponseDTO.MyProfileDto.builder()
+                .userId(1L)
+                .name("조성하")
+                .nickname("조성하하하")
+                .email("example@example.com")
+                .phone("010-1234-5678")
+                .build();
+
+        return ApiResponse.onSuccess(SuccessCode.OK, profile);
+    }
+
+    /**
+     * 8. 닉네임 수정 API
+     */
+    @PatchMapping("/me")
+    @Operation(summary = "닉네임 수정 API", description = "로그인한 유저의 닉네임을 수정합니다.")
+    public ApiResponse<UserResponseDTO.NicknameResultDto> updateNickname(@RequestBody UserRequestDTO.NicknameUpdateDto request) {
+        // TODO: 실제 서비스 로직 구현 필요 (더미 데이터 반환)
+        UserResponseDTO.NicknameResultDto updatedProfile = UserResponseDTO.NicknameResultDto.builder()
+                .userId(1L)
+                .name("조성하")
+                .nickname(request.getNickname()) // 요청 값 반영
+                .email("example@example.com")
+                .phone("010-1234-5678")
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        return ApiResponse.onSuccess(SuccessCode.OK, updatedProfile);
     }
 }

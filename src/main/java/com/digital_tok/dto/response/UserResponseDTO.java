@@ -57,4 +57,47 @@ public class UserResponseDTO {
         @Schema(description = "작업 완료 시각", example = "2026-01-15T14:30:00")
         LocalDateTime updatedAt;
     }
+
+    // 내 프로필 조회 Response
+    @Builder
+    @Getter
+    public static class MyProfileDto {
+        @Schema(description = "유저 ID", example = "1")
+        private Long userId;
+
+        @Schema(description = "유저 이름", example = "조성하")
+        private String name;
+
+        @Schema(description = "유저 닉네임", example = "조성하하하")
+        private String nickname;
+
+        @Schema(description = "유저 이메일", example = "example@example.com")
+        private String email;
+
+        @Schema(description = "유저 핸드폰 번호", example = "010-1234-5678")
+        private String phone;
+    }
+
+    // 닉네임 수정 Response (변경된 프로필 정보)
+    @Builder
+    @Getter
+    public static class NicknameResultDto {
+        @Schema(description = "유저 ID", example = "1")
+        private Long userId;
+
+        @Schema(description = "유저 이름", example = "조성하")
+        private String name;
+
+        @Schema(description = "변경된 닉네임", example = "새로운 닉네임")
+        private String nickname;
+
+        @Schema(description = "유저 이메일", example = "example@example.com")
+        private String email;
+
+        @Schema(description = "유저 핸드폰 번호", example = "010-1234-5678")
+        private String phone;
+
+        @Schema(description = "닉네임 변경 일시", example = "2026-01-15T14:30:00")
+        private LocalDateTime updatedAt;
+    }
 }

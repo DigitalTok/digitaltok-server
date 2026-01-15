@@ -22,60 +22,7 @@ public class UserRestController {
     // private final UserService userService; // 추후 서비스 의존성 주입 필요
 
     /**
-     * 1. 회원가입 API
-     */
-    @PostMapping("/signup")
-    @Operation(summary = "회원가입 API", description = "이메일, 비밀번호, 닉네임 등을 받아 회원을 생성합니다.")
-    public ApiResponse<UserResponseDTO.JoinResultDto> join(@RequestBody UserRequestDTO.JoinDto request) {
-        // TODO: 회원가입 로직 구현
-
-        // 일단 더미데이터 넣어둠 (프론트엔드 개발자가 어떤 result를 받을지 알 수 있음)
-        UserResponseDTO.JoinResultDto mockResult = UserResponseDTO.JoinResultDto.builder()
-                .userId(1L)
-                .email("aoc05230@naver.com")
-                .nickname("아이작")
-                .accessToken("aaaabbbb")
-                .refreshToken("aaaabbbb")
-                .build();
-
-        return ApiResponse.onSuccess(SuccessCode.OK, mockResult); // 응답 껍데기
-    }
-
-    /**
-     * 2. 로그인 API
-     * 설명: 이메일, 비밀번호를 받아 Access Token과 Refresh Token을 반환합니다.
-     */
-    @PostMapping("/login")
-    @Operation(summary = "로그인 API", description = "이메일과 비밀번호로 로그인하여 JWT(Access/Refresh Token)를 발급받습니다.")
-    public ApiResponse<UserResponseDTO.LoginResultDto> login(@RequestBody UserRequestDTO.LoginDto request) {
-        // TODO: 로그인 로직 구현
-
-        // 예시 더미데이터2
-        UserResponseDTO.LoginResultDto mockResult = UserResponseDTO.LoginResultDto.builder()
-                .grantType("grantType")
-                .accessToken("aaaabbbb")
-                .refreshToken("aaaabbbb")
-                .accessTokenExpiresIn(3600L)
-                .build();
-
-        return ApiResponse.onSuccess(SuccessCode.OK, mockResult);
-    }
-
-    /**
-     * 3. 로그아웃 API
-     * 설명: DB의 Refresh Token을 삭제합니다. Header의 Access Token과 Body의 Refresh Token이 필요합니다.
-     */
-    @DeleteMapping("/logout")
-    @Operation(summary = "로그아웃 API", description = "서버 DB 또는 Redis에 저장된 Refresh Token을 삭제합니다.")
-    public ApiResponse<String> logout(@RequestBody UserRequestDTO.LogoutDto request) {
-        // TODO: 로그아웃 로직 구현 (DB에서 RefreshToken 삭제)
-
-
-        return ApiResponse.onSuccess(SuccessCode.OK, "로그아웃에 성공했습니다.");
-    }
-
-    /**
-     * 4. 회원 탈퇴 API
+     * 1. 회원 탈퇴 API
      * 설명: 비밀번호를 확인 후 회원을 탈퇴 처리(Soft Delete or Hard Delete)합니다.
      * 특징: URL에 ID를 포함하지 않고, Header의 토큰으로 유저를 식별합니다.
      */
@@ -87,7 +34,7 @@ public class UserRestController {
     }
 
     /**
-     * 5. 비밀번호 변경 API
+     * 2. 비밀번호 변경 API
      * 설명: 현재 비밀번호와 새로운 비밀번호를 받아 변경합니다.
      */
     @PatchMapping("/password")
@@ -98,7 +45,7 @@ public class UserRestController {
     }
 
     /**
-     * 6. 이메일 주소 변경 API
+     * 3. 이메일 주소 변경 API
      * 설명: 비밀번호 확인 후 새로운 이메일로 변경합니다.
      */
     @PatchMapping("/email")
@@ -109,7 +56,7 @@ public class UserRestController {
     }
 
     /**
-     * 7. 내 프로필 조회 API
+     * 4. 내 프로필 조회 API
      */
     @GetMapping("/me")
     @Operation(summary = "내 프로필 조회 API", description = "로그인한 유저의 프로필 정보를 반환합니다.")
@@ -127,7 +74,7 @@ public class UserRestController {
     }
 
     /**
-     * 8. 닉네임 수정 API
+     * 5. 닉네임 수정 API
      */
     @PatchMapping("/me")
     @Operation(summary = "닉네임 수정 API", description = "로그인한 유저의 닉네임을 수정합니다.")

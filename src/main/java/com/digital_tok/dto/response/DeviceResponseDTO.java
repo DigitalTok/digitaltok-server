@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 @Builder
 public class DeviceResponseDTO {
 
-    private final Boolean isSuccess; // 성공 여부
     @Getter
     @Builder
     public static class Result {

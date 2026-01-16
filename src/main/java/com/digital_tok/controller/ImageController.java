@@ -1,0 +1,178 @@
+package com.digital_tok.controller;
+
+import com.digital_tok.dto.request.ImageRequestDTO;
+import com.digital_tok.dto.response.ImageResponseDTO;
+import com.digital_tok.global.apiPayload.ApiResponse;
+import com.digital_tok.global.apiPayload.code.SuccessCode;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/images")
+@Tag(name = "Image", description = "이미지 관련 API")
+public class ImageController {
+
+//    private final ImageService imageService;
+
+    @GetMapping("/recent")
+    @Operation(summary = "최근 사용한 사진 조회 API", description = "사용자가 최근에 사용한 사진 목록을 조회합니다.")
+    public ApiResponse<ImageResponseDTO.RecentImageListDto> getRecentImages() {
+
+        // TODO: 실제 DB 조회 로직으로 대체 필요
+
+        // 1. 더미 데이터 아이템 생성
+        ImageResponseDTO.RecentImageDto item1 = ImageResponseDTO.RecentImageDto.builder()
+                .imageId(301L)
+                .previewUrl("https://cdn.dirring.com/images/preview/301.png")
+                .category("SUBWAY_PRESET")
+                .imageName("강남_2호선")
+                .isFavorite(true)
+                .lastUsedAt(LocalDateTime.of(2026, 1, 12, 12, 34, 56))
+                .subwayTemplateId(12L)
+                .build();
+
+        ImageResponseDTO.RecentImageDto item2 = ImageResponseDTO.RecentImageDto.builder()
+                .imageId(455L)
+                .previewUrl("https://cdn.dirring.com/images/preview/455.png")
+                .category("USER_PHOTO")
+                .imageName("IMG_8721")
+                .isFavorite(false)
+                .lastUsedAt(LocalDateTime.of(2026, 1, 11, 9, 20, 10))
+                .subwayTemplateId(null) // null 값 처리 확인
+                .build();
+
+        List<ImageResponseDTO.RecentImageDto> items = List.of(item1, item2);
+
+        ImageResponseDTO.RecentImageListDto result = ImageResponseDTO.RecentImageListDto.builder()
+                .count(items.size())
+                .items(items)
+                .build();
+
+        return ApiResponse.onSuccess(SuccessCode.OK, result);
+    }
+
+    /**
+     * 이미지 업로드 API
+     */
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "이미지 업로드 API", description = "이미지 파일과 이름을 받아 서버에 업로드합니다.")
+    public ApiResponse<ImageResponseDTO.UploadResultDto> uploadImage(
+            @Parameter(description = "업로드할 이미지 파일", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
+            @RequestPart("file") MultipartFile file,
+            @Parameter(description = "이미지 이름", example = "myphoto_001")
+            @RequestParam("imageName") String imageName
+    ) {
+        // TODO: 실제 S3 업로드 및 DB 저장 로직 구현 필요
+
+        // Mock Data - Image 객체 생성
+        ImageResponseDTO.UploadedImageDto imageDto = ImageResponseDTO.UploadedImageDto.builder()
+                .imageId(55L)
+                .originalUrl("/images/original/55.jpg") // 가짜 URL
+                .previewUrl(null)
+                .einkDataUrl(null)
+                .category("USER_PHOTO")
+                .imageName(imageName) // 요청받은 이름 반영
+                .createdAt(LocalDateTime.of(2026, 1, 12, 21, 30, 0))
+                .deletedAt(null)
+                .subwayTemplateId(null)
+                .build();
+
+        // Mock Data - Mapping 객체 생성
+        ImageResponseDTO.UploadedImageMappingDto mappingDto = ImageResponseDTO.UploadedImageMappingDto.builder()
+                .userImageId(102L)
+                .userId(7L)
+                .imageId(55L)
+                .isFavorite(false)
+                .savedAt(LocalDateTime.of(2026, 1, 12, 21, 30, 0))
+                .lastUsedAt(null)
+                .build();
+
+        // 3. 결과 합치기
+        ImageResponseDTO.UploadResultDto result = ImageResponseDTO.UploadResultDto.builder()
+                .image(imageDto)
+                .imageMapping(mappingDto)
+                .build();
+
+        return ApiResponse.onSuccess(SuccessCode.OK, result);
+    }
+
+    /**
+     * 이미지 미리보기 조회 API
+     */
+    @GetMapping("/{imageId}/preview")
+    @Operation(summary = "이미지 미리보기 조회 API", description = "특정 이미지의 미리보기 URL과 갱신 시간을 조회합니다.")
+    public ApiResponse<ImageResponseDTO.PreviewResultDto> getImagePreview(@PathVariable Long imageId) {
+
+        // TODO: 실제 DB 조회 로직 구현 필요
+
+        // 더미 데이터 생성 (요청받은 imageId를 활용하여 동적으로 만듦)
+        ImageResponseDTO.PreviewResultDto result = ImageResponseDTO.PreviewResultDto.builder()
+                .imageId(imageId)
+                .previewUrl("https://cdn.diring.com/images/preview/" + imageId + ".png") // ID에 따라 URL이 바뀌도록 설정
+                .updatedAt(LocalDateTime.of(2026, 1, 12, 21, 40, 11))
+                .build();
+
+        return ApiResponse.onSuccess(SuccessCode.OK, result);
+    }
+
+    // ImageRestController.java 내부에 추가
+
+    /**
+     * 이미지 바이너리 데이터 URL 조회 API
+     * (바이너리 데이터를 S3에 올려두었다고 가정)
+     *
+     * - 선택한 이미지의 `eink_data_url`을 반환
+     * - 서버 내부적으로 **`ImageMapping`**의 `last_used_at`을 현재 시간(NOW)으로 업데이트
+     * - 만약 마켓 이미지를 처음 쓰는 거라면, `ImageMapping`에 데이터를 새로 생성(`INSERT`)하면서 시간을 기록
+     * - if 이미 변환된 미리보기 링크 있으면 ) 바로 내려줌
+     * - else if 없으면)로직 실행 후 내려줌
+     */
+    @GetMapping("/{imageId}/binary")
+    @Operation(summary = "이미지 바이너리 데이터 조회 API", description = "기기로 전송할 변환된 E-ink 바이너리 파일(.bin)의 URL을 조회합니다.")
+    public ApiResponse<ImageResponseDTO.BinaryResultDto> getImageBinary(@PathVariable Long imageId) {
+
+        // TODO: 실제 DB 조회 및 바이너리 파일 생성 여부 확인 로직 필요
+
+        // 더미 데이터 생성 (ID에 따라 URL이 바뀌도록 설정)
+        ImageResponseDTO.BinaryResultDto result = ImageResponseDTO.BinaryResultDto.builder()
+                .imageId(imageId)
+                .einkDataUrl("https://cdn.diring.com/eink/" + imageId + ".bin") // 가짜 CDN URL 생성
+                .lastUsedAt(LocalDateTime.of(2026, 1, 12, 22, 10, 20))
+                .build();
+
+        return ApiResponse.onSuccess(SuccessCode.OK, result);
+    }
+
+    /**
+     * 이미지 즐겨찾기 등록/해제 API
+     */
+    @PatchMapping("/{imageId}/favorite") // 수정이므로 PATCH 사용
+    @Operation(summary = "이미지 즐겨찾기 등록/해제 API", description = "이미지의 즐겨찾기 상태를 변경합니다.")
+    public ApiResponse<ImageResponseDTO.FavoriteResultDto> toggleFavorite(
+            @PathVariable Long imageId,
+            @RequestBody ImageRequestDTO.FavoriteDto request
+    ) {
+
+        // TODO: 실제 DB 업데이트 로직 구현 (isFavorite 값에 따라 등록/해제 처리)
+
+        // 더미 데이터 생성
+        ImageResponseDTO.FavoriteResultDto result = ImageResponseDTO.FavoriteResultDto.builder()
+                .imageId(imageId)
+                .isFavorite(request.getIsFavorite()) // 요청받은 값을 그대로 반환 (잘 반영됐는지 확인용)
+                .favoriteCount(request.getIsFavorite() ? 2 : 1) // 즐겨찾기 등록하면 1 증가된 값 나오게함.
+                .updatedAt(LocalDateTime.of(2026, 1, 12, 22, 20, 10))
+                .build();
+
+        return ApiResponse.onSuccess(SuccessCode.OK, result);
+    }
+}

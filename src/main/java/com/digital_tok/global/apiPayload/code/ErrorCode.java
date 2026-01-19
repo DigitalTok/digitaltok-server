@@ -18,10 +18,12 @@ public enum ErrorCode implements BaseErrorCode{
     
     // Member 관련 에러
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER404_1", "사용자를 찾을 수 없습니다."),
-    MEMBER_ALREADY_REGISTERED(HttpStatus.CONFLICT, "MEMBER409_1", "이미 가입된 사용자입니다.")
+    MEMBER_ALREADY_REGISTERED(HttpStatus.CONFLICT, "MEMBER409_1", "이미 가입된 사용자입니다."),
     
     // Device 관련 에러
-    
+    DEVICE_NOT_FOUND(HttpStatus.NOT_FOUND, "DEVICE404", "요청한 기기를 찾을 수 없습니다."),
+    DEVICE_ALREADY_CONNECTED(HttpStatus.BAD_REQUEST, "DEVICE400", "기기 상태가 이미 활성화되어 있습니다."),
+    DEVICE_ALREADY_DISCONNECTED(HttpStatus.BAD_REQUEST, "DEVICE401", "기기 상태가 이미 비활성화되어 있습니다."),
     // Image 관련 에러
     
     // subway 관련 에러

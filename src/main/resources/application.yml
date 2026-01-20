@@ -12,6 +12,7 @@ spring:
         format_sql: true
         show_sql: true
 
+  # 최신 버전에서 cloud는 spring 밑에 있어야함
   cloud:
     aws:
       s3:

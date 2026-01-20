@@ -47,23 +47,22 @@ jobs:
 
 # 배포 로직
   deploy:
-    needs: build  # build 작업이 성공적으로 완료된 후 실행
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download build artifact  # 이전 단계에서 업로드한 아티팩트 다운로드
+      - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
           name: digitalTok
           path: build/libs/
 
-      - name: Deploy to EC2  # EC2에 배포
+      - name: Deploy to EC2
+        # [1] 여기에 먼저 변수를 다 선언합니다. (env)
         env:
           EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
           EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
           EC2_HOST: ${{ secrets.EC2_HOST }}
-
-          # S3, RDS 연동
           DB_URL: ${{ secrets.DB_URL }}
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
@@ -75,24 +74,22 @@ jobs:
           jar_file=$(find build/libs -name '*.jar' ! -name '*plain.jar' | head -n 1)
           scp -i private_key.pem -o StrictHostKeyChecking=no "$jar_file" $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/digitalTok.jar
           
-          # 실행 스크립트(run.sh)를 로컬에서 생성.
+          # [2] 스크립트 생성
           echo "pgrep java | xargs -r kill -15" > run.sh
           echo "sleep 5" >> run.sh
           
-          # nohup 명령어 작성 (변수 값이 파일 안에 박제됩니다)
           echo "nohup java -Duser.timezone=Asia/Seoul \\" >> run.sh
           echo "  -Dspring.cloud.aws.region.static=ap-northeast-2 \\" >> run.sh
-          echo "  -DDB_URL=\"${{ secrets.DB_URL }}\" \\" >> run.sh
-          echo "  -DDB_USERNAME=\"${{ secrets.DB_USERNAME }}\" \\" >> run.sh
-          echo "  -DDB_PASSWORD=\"${{ secrets.DB_PASSWORD }}\" \\" >> run.sh
-          echo "  -DAWS_ACCESS_KEY=\"${{ secrets.AWS_ACCESS_KEY }}\" \\" >> run.sh
-          echo "  -DAWS_SECRET_KEY=\"${{ secrets.AWS_SECRET_KEY }}\" \\" >> run.sh
+          echo "  -DDB_URL=\"$DB_URL\" \\" >> run.sh
+          echo "  -DDB_USERNAME=\"$DB_USERNAME\" \\" >> run.sh
+          echo "  -DDB_PASSWORD=\"$DB_PASSWORD\" \\" >> run.sh
+          echo "  -DAWS_ACCESS_KEY=\"$AWS_ACCESS_KEY\" \\" >> run.sh
+          echo "  -DAWS_SECRET_KEY=\"$AWS_SECRET_KEY\" \\" >> run.sh
           echo "  -jar /home/$EC2_USERNAME/digitalTok.jar > app.log 2>&1 &" >> run.sh
           
-          # 만들어진 스크립트를 서버로 전송
+          # 만들어진 스크립트를 서버로 전송하고 실행
+          chmod +x run.sh
           scp -i private_key.pem -o StrictHostKeyChecking=no run.sh $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/run.sh
-          
-          # 서버에서 스크립트 실행
           ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST "sh /home/$EC2_USERNAME/run.sh"
           
-          rm -f private_key.pem  # 민감한 정보 삭제
+          rm -f private_key.pem run.sh

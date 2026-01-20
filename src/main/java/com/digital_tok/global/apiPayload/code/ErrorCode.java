@@ -21,7 +21,9 @@ public enum ErrorCode implements BaseErrorCode{
     MEMBER_ALREADY_REGISTERED(HttpStatus.CONFLICT, "MEMBER409_1", "이미 가입된 사용자입니다."),
     
     // Device 관련 에러
-    
+    DEVICE_NOT_FOUND(HttpStatus.NOT_FOUND, "DEVICE404", "요청한 기기를 찾을 수 없습니다."),
+    DEVICE_ALREADY_CONNECTED(HttpStatus.BAD_REQUEST, "DEVICE400", "기기 상태가 이미 활성화되어 있습니다."),
+    DEVICE_ALREADY_DISCONNECTED(HttpStatus.BAD_REQUEST, "DEVICE401", "기기 상태가 이미 비활성화되어 있습니다."),
     // Image 관련 에러
     IMAGE_UPLOAD_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "IMAGE500_1", "이미지 업로드에 실패했습니다."); // 세미콜론(;) 주의
 

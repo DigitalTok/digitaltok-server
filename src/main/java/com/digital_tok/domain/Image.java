@@ -40,10 +40,7 @@ public class Image {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    // 지하철 템플릿 ID (FK)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "subway_template_id")
-    private SubwayTemplate subwayTemplate;
+    // 지하철 템플릿 매핑 삭제
 
     public void updatePreviewUrl(String previewUrl) {
         this.previewUrl = previewUrl;

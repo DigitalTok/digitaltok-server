@@ -21,17 +21,17 @@ public class SubwayTemplate {
     @Column(name = "station_name", length = 50, nullable = false)
     private String stationName;
 
+    @Column(name = "station_name_eng", length = 50)
+    private String stationNameEng;
+
     @Column(name = "line_name", length = 50, nullable = false)
     private String lineName;
 
     @Column(name = "template_image_url", length = 255, nullable = false)
     private String templateImageUrl;
 
-    @Column(name = "template_preview_url", length = 255)
-    private String templatePreviewUrl;
-
-    @Column(name = "is_active", nullable = false)
-    private Boolean isActive;
+    @Column(name = "template_data_url", length = 255, nullable = false)
+    private String templateDataUrl;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -42,9 +42,4 @@ public class SubwayTemplate {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    @Column(name = "line_color", length = 50)
-    private String lineColor;
-
-    @Column(name = "station_name_eng", length = 50)
-    private String stationNameEng;
 }

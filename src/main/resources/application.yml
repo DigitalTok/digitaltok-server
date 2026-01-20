@@ -1,22 +1,28 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/{gripDB}?serverTimezone=Asia/Seoul
-    username: root
-    password: {0808}
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
-  sql:
-    init:
-      mode: never
   jpa:
+    hibernate:
+      ddl-auto: update   # create는 매번 데이터를 날리므로 update 추천
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
-        show_sql: true
         format_sql: true
-        use_sql_comments: true
-        hbm2ddl:
-          auto: create
-        default_batch_fetch_size: 1000
+        show_sql: true
+
+  cloud:
+    aws:
+      s3:
+        bucket: digitaltok-bucket
+      region:
+        static: ap-northeast-2
+      stack:
+        auto: false
+      credentials:
+        access-key: ${AWS_ACCESS_KEY}
+        secret-key: ${AWS_SECRET_KEY}
   # ... ?? ?? ...
   #  security:
   #    oauth2:

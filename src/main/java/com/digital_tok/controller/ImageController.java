@@ -5,6 +5,7 @@ import com.digital_tok.dto.request.ImageRequestDTO;
 import com.digital_tok.dto.response.ImageResponseDTO;
 import com.digital_tok.global.apiPayload.ApiResponse;
 import com.digital_tok.global.apiPayload.code.SuccessCode;
+import com.digital_tok.service.AmazonS3Manager;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -24,6 +25,57 @@ import java.util.List;
 public class ImageController {
 
     private final ImageService imageService;
+//    private final ImageService imageService;
+    private final AmazonS3Manager s3Manager;
+
+    /**
+     * S3 테스트용 이미지 업로드 API
+     */
+    @PostMapping(value = "/s3", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "S3 테스트용 이미지 업로드 API", description = "이미지 파일과 이름을 받아 서버에 업로드합니다.")
+    public ApiResponse<ImageResponseDTO.UploadResultDto> uploadImageS3(
+            @Parameter(description = "업로드할 이미지 파일", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
+            @RequestPart("file") MultipartFile file,
+            @Parameter(description = "이미지 이름", example = "myphoto_001")
+            @RequestParam("imageName") String imageName
+    ) {
+        // 실제 S3 업로드 수행
+        // "images"는 S3 버킷 내부에 생성될 폴더 이름
+        String uploadedUrl = s3Manager.uploadFile("images", file);
+
+        // TODO : DB 저장 로직(Service 호출)
+
+        // 업로드된 URL을 응답 데이터에 넣어줌
+        ImageResponseDTO.UploadedImageDto imageDto = ImageResponseDTO.UploadedImageDto.builder()
+                .imageId(55L) // 임시 ID
+                .originalUrl(uploadedUrl) // S3에서 받은 실제 URL!
+                .previewUrl(uploadedUrl)  // 미리보기에도 같은 URL 사용
+                .einkDataUrl(null)
+                .category("USER_PHOTO")
+                .imageName(imageName)
+                .createdAt(LocalDateTime.now())
+                .deletedAt(null)
+                .subwayTemplateId(null)
+                .build();
+
+        // 매핑 정보 (더미 데이터)
+        ImageResponseDTO.UploadedImageMappingDto mappingDto = ImageResponseDTO.UploadedImageMappingDto.builder()
+                .userImageId(102L)
+                .userId(1L)
+                .imageId(55L)
+                .isFavorite(false)
+                .savedAt(LocalDateTime.now())
+                .lastUsedAt(null)
+                .build();
+
+        ImageResponseDTO.UploadResultDto result = ImageResponseDTO.UploadResultDto.builder()
+                .image(imageDto)
+                .imageMapping(mappingDto)
+                .build();
+
+        return ApiResponse.onSuccess(SuccessCode.OK, result);
+    }
+
     @GetMapping("/recent")
     @Operation(summary = "최근 사용한 사진 조회 API", description = "사용자가 최근에 사용한 사진 목록을 조회합니다.")
     public ApiResponse<ImageResponseDTO.RecentImageListDto> getRecentImages() {

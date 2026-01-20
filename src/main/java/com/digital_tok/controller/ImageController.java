@@ -1,5 +1,6 @@
 package com.digital_tok.controller;
 
+import com.digital_tok.service.image.ImageService;
 import com.digital_tok.dto.request.ImageRequestDTO;
 import com.digital_tok.dto.response.ImageResponseDTO;
 import com.digital_tok.global.apiPayload.ApiResponse;
@@ -23,6 +24,7 @@ import java.util.List;
 @Tag(name = "Image", description = "이미지 관련 API")
 public class ImageController {
 
+    private final ImageService imageService;
 //    private final ImageService imageService;
     private final AmazonS3Manager s3Manager;
 
@@ -160,16 +162,14 @@ public class ImageController {
      * 이미지 미리보기 조회 API
      */
     @GetMapping("/{imageId}/preview")
-    @Operation(summary = "이미지 미리보기 조회 API", description = "특정 이미지의 미리보기 URL과 갱신 시간을 조회합니다.")
     public ApiResponse<ImageResponseDTO.PreviewResultDto> getImagePreview(@PathVariable Long imageId) {
 
-        // TODO: 실제 DB 조회 로직 구현 필요
+        var r = imageService.getPreview(imageId);
 
-        // 더미 데이터 생성 (요청받은 imageId를 활용하여 동적으로 만듦)
         ImageResponseDTO.PreviewResultDto result = ImageResponseDTO.PreviewResultDto.builder()
-                .imageId(imageId)
-                .previewUrl("https://cdn.diring.com/images/preview/" + imageId + ".png") // ID에 따라 URL이 바뀌도록 설정
-                .updatedAt(LocalDateTime.of(2026, 1, 12, 21, 40, 11))
+                .imageId(r.imageId())
+                .previewUrl(r.previewUrl())
+                .updatedAt(r.updatedAt())
                 .build();
 
         return ApiResponse.onSuccess(SuccessCode.OK, result);
@@ -189,19 +189,20 @@ public class ImageController {
      */
     @GetMapping("/{imageId}/binary")
     @Operation(summary = "이미지 바이너리 데이터 조회 API", description = "기기로 전송할 변환된 E-ink 바이너리 파일(.bin)의 URL을 조회합니다.")
-    public ApiResponse<ImageResponseDTO.BinaryResultDto> getImageBinary(@PathVariable Long imageId) {
+    public ApiResponse<ImageResponseDTO.BinaryResultDto> getImageBinary(
+            @PathVariable Long imageId) {
+        Long userId = 1L;//더미 데이터-- 추후 jwt추출로 변경
+        var r = imageService.getBinary(userId, imageId);
 
-        // TODO: 실제 DB 조회 및 바이너리 파일 생성 여부 확인 로직 필요
-
-        // 더미 데이터 생성 (ID에 따라 URL이 바뀌도록 설정)
         ImageResponseDTO.BinaryResultDto result = ImageResponseDTO.BinaryResultDto.builder()
-                .imageId(imageId)
-                .einkDataUrl("https://cdn.diring.com/eink/" + imageId + ".bin") // 가짜 CDN URL 생성
-                .lastUsedAt(LocalDateTime.of(2026, 1, 12, 22, 10, 20))
+                .imageId(r.imageId())
+                .einkDataUrl(r.einkDataUrl())
+                .lastUsedAt(r.lastUsedAt())
                 .build();
 
         return ApiResponse.onSuccess(SuccessCode.OK, result);
     }
+
 
     /**
      * 이미지 즐겨찾기 등록/해제 API

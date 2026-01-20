@@ -2,50 +2,45 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ develop, feat/23-fix-deploy ]  # develop 브랜치에 push가 일어날 때 실행
+    branches: [ develop, feat/23-fix-deploy ]
 
-# Build 로직
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3  # 저장소 코드 체크아웃
+      - uses: actions/checkout@v3
 
-      - name: Set up JDK 17  # Java 개발 킷 설정
+      - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Make application.yml  # application.yml 파일 생성
+      # application.yml 생성 방식 변경
+      - name: Make application.yml
         run: |
           cd ./src/main/resources
-          echo "${{ secrets.APPLICATION_YML }}" > ./application.yml
+          # EOF에 따옴표(')를 붙여서 쉘이 ${...}를 건드리지 못하게 막습니다.
+          cat << 'EOF' > ./application.yml
+          ${{ secrets.APPLICATION_YML }}
+          EOF
         shell: bash
 
-      - name: Grant execute permission for gradlew  # gradlew 실행 권한 부여
+      - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build with Gradle  # Gradle을 사용하여 프로젝트 빌드
+      - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
-        env:
-          # S3, RDS 연동
-          DB_URL: ${{ secrets.DB_URL }}
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
-          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
         with:
           arguments: build -x test
 
-      - name: Upload build artifact  # 빌드된 아티팩트 업로드
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: digitalTok
           path: build/libs/*.jar
 
-# 배포 로직
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -57,6 +52,7 @@ jobs:
           name: digitalTok
           path: build/libs/
 
+      # env 추가 및 run.sh 생성
       - name: Deploy to EC2
         env:
           EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
@@ -67,18 +63,16 @@ jobs:
           chmod 600 private_key.pem
           jar_file=$(find build/libs -name '*.jar' ! -name '*plain.jar' | head -n 1)
           
-          # 이제 $EC2_USERNAME, $EC2_HOST 값이 정상적으로 들어갑니다.
+          # 파일 전송
           scp -i private_key.pem -o StrictHostKeyChecking=no "$jar_file" $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/digitalTok.jar
           
-          # ----------------------------------------------------------------
-          # [Final Solution] Heredoc 방식
-          # ----------------------------------------------------------------
+          # 실행 스크립트 생성 (run.sh)
+          # 여기서는 따옴표 없는 EOF를 써서 GitHub Actions 변수가 들어가게 합니다.
           cat <<EOF > run.sh
           #!/bin/bash
           pgrep java | xargs -r kill -15
           sleep 5
           
-          # GitHub Actions가 값을 여기에 직접 박아넣습니다.
           export DB_URL="${{ secrets.DB_URL }}"
           export DB_USERNAME="${{ secrets.DB_USERNAME }}"
           export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"

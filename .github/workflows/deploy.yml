@@ -75,18 +75,24 @@ jobs:
           jar_file=$(find build/libs -name '*.jar' ! -name '*plain.jar' | head -n 1)
           scp -i private_key.pem -o StrictHostKeyChecking=no "$jar_file" $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/digitalTok.jar
           
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST "
-            pgrep java | xargs -r kill -15  # 기존에 실행 중인 Java 프로세스 종료
-            sleep 10
+          # 실행 스크립트(run.sh)를 로컬에서 생성.
+          echo "pgrep java | xargs -r kill -15" > run.sh
+          echo "sleep 5" >> run.sh
           
-          # GitHub Actions에 있는 변수 값을 EC2 내부로 밀어 넣기
-            nohup java -Duser.timezone=Asia/Seoul \
-              -Dspring.cloud.aws.region.static=ap-northeast-2 \
-              -DDB_URL=\"${{ secrets.DB_URL }}\" \
-              -DDB_USERNAME=\"${{ secrets.DB_USERNAME }}\" \
-              -DDB_PASSWORD=\"${{ secrets.DB_PASSWORD }}\" \
-              -DAWS_ACCESS_KEY=\"${{ secrets.AWS_ACCESS_KEY }}\" \
-              -DAWS_SECRET_KEY=\"${{ secrets.AWS_SECRET_KEY }}\" \
-              -jar /home/$EC2_USERNAME/digitalTok.jar > app.log 2>&1 &
-          "
+          # nohup 명령어 작성 (변수 값이 파일 안에 박제됩니다)
+          echo "nohup java -Duser.timezone=Asia/Seoul \\" >> run.sh
+          echo "  -Dspring.cloud.aws.region.static=ap-northeast-2 \\" >> run.sh
+          echo "  -DDB_URL=\"${{ secrets.DB_URL }}\" \\" >> run.sh
+          echo "  -DDB_USERNAME=\"${{ secrets.DB_USERNAME }}\" \\" >> run.sh
+          echo "  -DDB_PASSWORD=\"${{ secrets.DB_PASSWORD }}\" \\" >> run.sh
+          echo "  -DAWS_ACCESS_KEY=\"${{ secrets.AWS_ACCESS_KEY }}\" \\" >> run.sh
+          echo "  -DAWS_SECRET_KEY=\"${{ secrets.AWS_SECRET_KEY }}\" \\" >> run.sh
+          echo "  -jar /home/$EC2_USERNAME/digitalTok.jar > app.log 2>&1 &" >> run.sh
+          
+          # 만들어진 스크립트를 서버로 전송
+          scp -i private_key.pem -o StrictHostKeyChecking=no run.sh $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/run.sh
+          
+          # 서버에서 스크립트 실행
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST "sh /home/$EC2_USERNAME/run.sh"
+          
           rm -f private_key.pem  # 민감한 정보 삭제

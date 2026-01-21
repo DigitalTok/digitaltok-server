@@ -22,13 +22,8 @@ public class ImageMapping {
     private Long userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    // nullable 하게 수정
-    @JoinColumn(name = "image_id")
+    @JoinColumn(name = "image_id", nullable = false)
     private Image image;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "subway_template_id") // nullable
-    private SubwayTemplate subwayTemplate;
 
     @Column(name = "is_favorite", nullable = false)
     private Boolean isFavorite;

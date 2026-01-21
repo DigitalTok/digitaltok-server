@@ -1,40 +1,40 @@
 package com.digital_tok.convertor;
 
 import com.digital_tok.domain.SubwayTemplate;
-import com.digital_tok.dto.response.SubwayResponseDTO;
+import com.digital_tok.dto.response.TemplateResponseDTO;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class SubwayConvertor {
+public class TemplateConverter {
 
     // 단일 역 Entity to DTO 변환
-    public SubwayResponseDTO.SubwayItemDto toItemDto(SubwayTemplate entity) {
-        return SubwayResponseDTO.SubwayItemDto.builder()
-                .subwayTemplateId(entity.getSubwayTemplateId())
+    public TemplateResponseDTO.SubwayItemDto toSubwayItemDto(SubwayTemplate entity) {
+        return TemplateResponseDTO.SubwayItemDto.builder()
+                .templateId(entity.getId())
                 .stationName(entity.getStationName())
                 .lineName(entity.getLineName())
-                .previewUrl(entity.getTemplateImageUrl())
+                .templateImageUrl(entity.getTemplateImageUrl())
                 .build();
     }
 
     // 리스트 Entity to DTO 변환
-    public SubwayResponseDTO.SubwayListDto toListDto(List<SubwayTemplate> entities) {
-        List<SubwayResponseDTO.SubwayItemDto> items = entities.stream()
-                .map(this::toItemDto)
+    public TemplateResponseDTO.SubwayListDto toSubwayListDto(List<SubwayTemplate> entities) {
+        List<TemplateResponseDTO.SubwayItemDto> items = entities.stream()
+                .map(this::toSubwayItemDto)
                 .collect(Collectors.toList());
 
-        return SubwayResponseDTO.SubwayListDto.builder()
+        return TemplateResponseDTO.SubwayListDto.builder()
                 .count(items.size())
                 .items(items)
                 .build();
     }
 
-    public SubwayResponseDTO.SubwayDetailDto toDetailDto(SubwayTemplate entity) {
-        return SubwayResponseDTO.SubwayDetailDto.builder()
-                .subwayTemplateId(entity.getSubwayTemplateId())
+    public TemplateResponseDTO.SubwayDetailDto toSubwayDetailDto(SubwayTemplate entity) {
+        return TemplateResponseDTO.SubwayDetailDto.builder()
+                .templateId(entity.getId())
                 .stationName(entity.getStationName())
                 .stationNameEng(entity.getStationNameEng())
                 .lineName(entity.getLineName())
@@ -42,4 +42,6 @@ public class SubwayConvertor {
                 .templateDataUrl(entity.getTemplateDataUrl())
                 .build();
     }
+    
+    // TODO: 교통약자 템플릿 관련 기능 추가
 }

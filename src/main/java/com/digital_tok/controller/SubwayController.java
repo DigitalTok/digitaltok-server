@@ -1,8 +1,8 @@
 package com.digital_tok.controller;
 
-import com.digital_tok.convertor.SubwayConvertor;
+import com.digital_tok.convertor.TemplateConverter;
 import com.digital_tok.domain.SubwayTemplate;
-import com.digital_tok.dto.response.SubwayResponseDTO;
+import com.digital_tok.dto.response.TemplateResponseDTO;
 import com.digital_tok.global.apiPayload.ApiResponse;
 import com.digital_tok.global.apiPayload.code.SuccessCode;
 import com.digital_tok.service.SubwayService;
@@ -23,27 +23,27 @@ import java.util.List;
 public class SubwayController {
 
     private final SubwayService subwayService;
-    private final SubwayConvertor subwayConvertor;
+    private final TemplateConverter templateConverter;
 
     @GetMapping("/templates")
     @Operation(summary = "지하철 역 템플릿 목록 조회", description = "가나다 순으로 정렬된 지하철 역 템플릿 목록을 반환")
-    public ApiResponse<SubwayResponseDTO.SubwayListDto> getSubwayTemplates() {
+    public ApiResponse<TemplateResponseDTO.SubwayListDto> getSubwayTemplates() {
 
         List<SubwayTemplate> templates = subwayService.getSubwayTemplates();
 
-        SubwayResponseDTO.SubwayListDto result = subwayConvertor.toListDto(templates);
+        TemplateResponseDTO.SubwayListDto result = templateConverter.toSubwayListDto(templates);
 
         return ApiResponse.onSuccess(SuccessCode.OK, result);
     }
 
     @GetMapping("/templates/{subwayTemplateId}")
     @Operation(summary = "단일 지하철 역 조회", description = "특정 지하철 역 정보를 반환")
-    public ApiResponse<SubwayResponseDTO.SubwayDetailDto> getSubwayTemplateDetail(
+    public ApiResponse<TemplateResponseDTO.SubwayDetailDto> getSubwayTemplateDetail(
             @PathVariable Long subwayTemplateId) {
 
         SubwayTemplate subwayTemplate = subwayService.getSubwayTemplate(subwayTemplateId);
 
-        SubwayResponseDTO.SubwayDetailDto result = subwayConvertor.toDetailDto(subwayTemplate);
+        TemplateResponseDTO.SubwayDetailDto result = templateConverter.toSubwayDetailDto(subwayTemplate);
 
         return ApiResponse.onSuccess(SuccessCode.OK, result);
     }

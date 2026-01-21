@@ -22,8 +22,8 @@ public class SubwayService {
         return subwayTemplateRepository.findAllByOrderByStationNameAsc();
     }
 
-    public SubwayTemplate getSubwayTemplate(Long subwayTemplateId) {
-        return subwayTemplateRepository.findById(subwayTemplateId)
+    public SubwayTemplate getSubwayTemplate(Long templateId) {
+        return subwayTemplateRepository.findById(templateId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.STATION_NOT_FOUND));
     }
 }

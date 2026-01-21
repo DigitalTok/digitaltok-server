@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,6 +36,15 @@ public class SubwayController {
         return ApiResponse.onSuccess(SuccessCode.OK, result);
     }
 
-//    @GetMapping("/templates/{subwayTemplateId}")
-//    @Operation(summary = "단일 지하철 역 조회", description = "단일 지하철 역 정보를 반환")
+    @GetMapping("/templates/{subwayTemplateId}")
+    @Operation(summary = "단일 지하철 역 조회", description = "특정 지하철 역 정보를 반환")
+    public ApiResponse<SubwayResponseDTO.SubwayDetailDto> getSubwayTemplateDetail(
+            @PathVariable Long subwayTemplateId) {
+
+        SubwayTemplate subwayTemplate = subwayService.getSubwayTemplate(subwayTemplateId);
+
+        SubwayResponseDTO.SubwayDetailDto result = subwayConvertor.toDetailDto(subwayTemplate);
+
+        return ApiResponse.onSuccess(SuccessCode.OK, result);
+    }
 }

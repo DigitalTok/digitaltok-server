@@ -31,4 +31,15 @@ public class SubwayConvertor {
                 .items(items)
                 .build();
     }
+
+    public SubwayResponseDTO.SubwayDetailDto toDetailDto(SubwayTemplate entity) {
+        return SubwayResponseDTO.SubwayDetailDto.builder()
+                .subwayTemplateId(entity.getSubwayTemplateId())
+                .stationName(entity.getStationName())
+                .stationNameEng(entity.getStationNameEng())
+                .lineName(entity.getLineName())
+                .templateImageUrl(entity.getTemplateImageUrl())
+                .templateDataUrl(entity.getTemplateDataUrl())
+                .build();
+    }
 }

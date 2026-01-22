@@ -28,8 +28,8 @@ public class Image {
     @Column(name = "eink_data_url", length = 255)
     private String einkDataUrl;
 
-    @Column(name = "category", length = 50, nullable = false)
-    private String category;
+    //@Column(name = "category", length = 50, nullable = false)
+    //private String category;
 
     @Column(name = "image_name", length = 255, nullable = false)
     private String imageName;
@@ -40,10 +40,8 @@ public class Image {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    // 지하철 템플릿 ID (FK)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "subway_template_id")
-    private SubwayTemplate subwayTemplate;
+    // 지하철 템플릿 ID (FK)-삭제
+
 
     public void updatePreviewUrl(String previewUrl) {
         this.previewUrl = previewUrl;
@@ -52,4 +50,11 @@ public class Image {
     public void updateEinkDataUrl(String einkDataUrl) {
         this.einkDataUrl = einkDataUrl;
     }
+
+    //notnull일때 저장 실패 막음
+    @PrePersist
+    public void prePersist() {
+        if (this.createdAt == null) this.createdAt = LocalDateTime.now();
+    }
+
 }

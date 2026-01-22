@@ -47,4 +47,17 @@ public class SubwayTemplate {
 
     @Column(name = "station_name_eng", length = 50)
     private String stationNameEng;
+
+    //db not null 컬럼 때문에 저장 실패하는 것 막아줌
+    @PrePersist
+    public void prePersist() {
+        if (this.createdAt == null) this.createdAt = LocalDateTime.now();
+        if (this.isActive == null) this.isActive = true;
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
 }

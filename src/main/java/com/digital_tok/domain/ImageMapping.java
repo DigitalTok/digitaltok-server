@@ -37,4 +37,12 @@ public class ImageMapping {
     public void touchLastUsedAt(LocalDateTime now) {
         this.lastUsedAt = now;
     }
+
+    //notnull 일때 저장실패 막음
+    @PrePersist
+    public void prePersist() {
+        if (this.savedAt == null) this.savedAt = LocalDateTime.now();
+        if (this.isFavorite == null) this.isFavorite = false;
+    }
+
 }

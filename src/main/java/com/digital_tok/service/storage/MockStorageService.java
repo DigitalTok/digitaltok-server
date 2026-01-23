@@ -1,10 +1,12 @@
 package com.digital_tok.service.storage;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-/// ///S3 구성되면 Primary 삭제하기///////
-@Primary
+//@Profile("dev")
+@ConditionalOnProperty(name = "storage.type", havingValue = "mock")
 @Service
 public class MockStorageService implements StorageService {
 

@@ -18,6 +18,11 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.digital_tok.domain.Image;
+import com.digital_tok.domain.ImageMapping;
+import com.digital_tok.repository.ImageRepository;
+import com.digital_tok.repository.ImageMappingRepository;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/images")
@@ -25,13 +30,15 @@ import java.util.List;
 public class ImageController {
 
     private final ImageService imageService;
-//    private final ImageService imageService;
     private final AmazonS3Manager s3Manager;
+    private final ImageRepository imageRepository;
+    private final ImageMappingRepository imageMappingRepository;
+
 
     /**
      * S3 테스트용 이미지 업로드 API
      */
-    @PostMapping(value = "/s3", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    /**@PostMapping(value = "/s3", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "S3 테스트용 이미지 업로드 API", description = "이미지 파일과 이름을 받아 서버에 업로드합니다.")
     public ApiResponse<ImageResponseDTO.UploadResultDto> uploadImageS3(
             @Parameter(description = "업로드할 이미지 파일", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
@@ -39,33 +46,54 @@ public class ImageController {
             @Parameter(description = "이미지 이름", example = "myphoto_001")
             @RequestParam("imageName") String imageName
     ) {
-        // 실제 S3 업로드 수행
-        // "images"는 S3 버킷 내부에 생성될 폴더 이름
+        // 1) S3 업로드
         String uploadedUrl = s3Manager.uploadFile("images", file);
 
-        // TODO : DB 저장 로직(Service 호출)
+        // 2) image 테이블 저장
+        Image savedImage = imageRepository.save(
+                Image.builder()
+                        .originalUrl(uploadedUrl)
+                        .previewUrl(uploadedUrl) // 일단 same url로(임시)
+                        .einkDataUrl(null)
+                        //.category("USER_PHOTO")
+                        .imageName(imageName)
+                        .createdAt(LocalDateTime.now())
+                        .deletedAt(null)
+                        .build()
+        );
 
-        // 업로드된 URL을 응답 데이터에 넣어줌
+        // 3) image_mapping 저장 (로그인 미구현이니까 userId 더미)
+        Long userId = 1L;
+        ImageMapping savedMapping = imageMappingRepository.save(
+                ImageMapping.builder()
+                        .userId(userId)
+                        .image(savedImage)
+                        .isFavorite(false)
+                        .savedAt(LocalDateTime.now())
+                        .lastUsedAt(null)
+                        .build()
+        );
+
+        // 4) 응답 DTO 만들기 (진짜 ID를 넣어야 함!)
         ImageResponseDTO.UploadedImageDto imageDto = ImageResponseDTO.UploadedImageDto.builder()
-                .imageId(55L) // 임시 ID
-                .originalUrl(uploadedUrl) // S3에서 받은 실제 URL!
-                .previewUrl(uploadedUrl)  // 미리보기에도 같은 URL 사용
-                .einkDataUrl(null)
-                .category("USER_PHOTO")
-                .imageName(imageName)
-                .createdAt(LocalDateTime.now())
-                .deletedAt(null)
-                .subwayTemplateId(null)
+                .imageId(savedImage.getImageId())
+                .originalUrl(savedImage.getOriginalUrl())
+                .previewUrl(savedImage.getPreviewUrl())
+                .einkDataUrl(savedImage.getEinkDataUrl())
+                //.category(savedImage.getCategory())
+                .imageName(savedImage.getImageName())
+                .createdAt(savedImage.getCreatedAt())
+                .deletedAt(savedImage.getDeletedAt())
+                //.subwayTemplateId(null)
                 .build();
 
-        // 매핑 정보 (더미 데이터)
         ImageResponseDTO.UploadedImageMappingDto mappingDto = ImageResponseDTO.UploadedImageMappingDto.builder()
-                .userImageId(102L)
-                .userId(1L)
-                .imageId(55L)
-                .isFavorite(false)
-                .savedAt(LocalDateTime.now())
-                .lastUsedAt(null)
+                .userImageId(savedMapping.getUserImageId())
+                .userId(savedMapping.getUserId())
+                .imageId(savedImage.getImageId())
+                .isFavorite(savedMapping.getIsFavorite())
+                .savedAt(savedMapping.getSavedAt())
+                .lastUsedAt(savedMapping.getLastUsedAt())
                 .build();
 
         ImageResponseDTO.UploadResultDto result = ImageResponseDTO.UploadResultDto.builder()
@@ -74,7 +102,7 @@ public class ImageController {
                 .build();
 
         return ApiResponse.onSuccess(SuccessCode.OK, result);
-    }
+    }**/
 
     @GetMapping("/recent")
     @Operation(summary = "최근 사용한 사진 조회 API", description = "사용자가 최근에 사용한 사진 목록을 조회합니다.")
@@ -86,21 +114,21 @@ public class ImageController {
         ImageResponseDTO.RecentImageDto item1 = ImageResponseDTO.RecentImageDto.builder()
                 .imageId(301L)
                 .previewUrl("https://cdn.dirring.com/images/preview/301.png")
-                .category("SUBWAY_PRESET")
+                //.category("SUBWAY_PRESET")
                 .imageName("강남_2호선")
                 .isFavorite(true)
                 .lastUsedAt(LocalDateTime.of(2026, 1, 12, 12, 34, 56))
-                .subwayTemplateId(12L)
+                //.subwayTemplateId(12L)
                 .build();
 
         ImageResponseDTO.RecentImageDto item2 = ImageResponseDTO.RecentImageDto.builder()
                 .imageId(455L)
                 .previewUrl("https://cdn.dirring.com/images/preview/455.png")
-                .category("USER_PHOTO")
+                //.category("USER_PHOTO")
                 .imageName("IMG_8721")
                 .isFavorite(false)
                 .lastUsedAt(LocalDateTime.of(2026, 1, 11, 9, 20, 10))
-                .subwayTemplateId(null) // null 값 처리 확인
+                //.subwayTemplateId(null) // null 값 처리 확인
                 .build();
 
         List<ImageResponseDTO.RecentImageDto> items = List.of(item1, item2);
@@ -123,33 +151,32 @@ public class ImageController {
             @RequestPart("file") MultipartFile file,
             @Parameter(description = "이미지 이름", example = "myphoto_001")
             @RequestParam("imageName") String imageName
+            //@Parameter(description = "카테고리", example = "USER_PHOTO")
+            //@RequestParam("category") String category
     ) {
-        // TODO: 실제 S3 업로드 및 DB 저장 로직 구현 필요
+        Long userId = 1L; // TODO JWT 붙이면 교체
+        var r = imageService.uploadImage(file, imageName, userId);
 
-        // Mock Data - Image 객체 생성
         ImageResponseDTO.UploadedImageDto imageDto = ImageResponseDTO.UploadedImageDto.builder()
-                .imageId(55L)
-                .originalUrl("/images/original/55.jpg") // 가짜 URL
-                .previewUrl(null)
-                .einkDataUrl(null)
-                .category("USER_PHOTO")
-                .imageName(imageName) // 요청받은 이름 반영
-                .createdAt(LocalDateTime.of(2026, 1, 12, 21, 30, 0))
-                .deletedAt(null)
-                .subwayTemplateId(null)
+                .imageId(r.image().getImageId())
+                .originalUrl(r.image().getOriginalUrl())
+                .previewUrl(r.image().getPreviewUrl())
+                .einkDataUrl(r.image().getEinkDataUrl())
+                //.category(r.image().getCategory())
+                .imageName(r.image().getImageName())
+                .createdAt(r.image().getCreatedAt())
+                .deletedAt(r.image().getDeletedAt())
+                //.subwayTemplateId(r.image().getSubwayTemplate() == null ? null : r.image().getSubwayTemplate().getSubwayTemplateId())
                 .build();
-
-        // Mock Data - Mapping 객체 생성
         ImageResponseDTO.UploadedImageMappingDto mappingDto = ImageResponseDTO.UploadedImageMappingDto.builder()
-                .userImageId(102L)
-                .userId(7L)
-                .imageId(55L)
-                .isFavorite(false)
-                .savedAt(LocalDateTime.of(2026, 1, 12, 21, 30, 0))
-                .lastUsedAt(null)
+                .userImageId(r.mapping().getUserImageId())
+                .userId(r.mapping().getUserId())
+                .imageId(r.image().getImageId())
+                .isFavorite(r.mapping().getIsFavorite())
+                .savedAt(r.mapping().getSavedAt())
+                .lastUsedAt(r.mapping().getLastUsedAt())
                 .build();
 
-        // 3. 결과 합치기
         ImageResponseDTO.UploadResultDto result = ImageResponseDTO.UploadResultDto.builder()
                 .image(imageDto)
                 .imageMapping(mappingDto)
@@ -191,14 +218,24 @@ public class ImageController {
     @Operation(summary = "이미지 바이너리 데이터 조회 API", description = "기기로 전송할 변환된 E-ink 바이너리 파일(.bin)의 URL을 조회합니다.")
     public ApiResponse<ImageResponseDTO.BinaryResultDto> getImageBinary(
             @PathVariable Long imageId) {
+        System.out.println("### HIT /binary imageId=" + imageId);
         Long userId = 1L;//더미 데이터-- 추후 jwt추출로 변경
         var r = imageService.getBinary(userId, imageId);
+        System.out.println("### Controller r.einkDataUrl=" + r.einkDataUrl());
 
         ImageResponseDTO.BinaryResultDto result = ImageResponseDTO.BinaryResultDto.builder()
                 .imageId(r.imageId())
                 .einkDataUrl(r.einkDataUrl())
                 .lastUsedAt(r.lastUsedAt())
                 .build();
+        System.out.println("### DTO result.einkDataUrl=" + result.getEinkDataUrl());
+
+
+        System.out.println("### CONTROLLER r.class=" + r.getClass());
+        System.out.println("### CONTROLLER r=" + r);
+        System.out.println("### CONTROLLER r.hash=" + System.identityHashCode(r));
+        System.out.println("### CONTROLLER r.eink=" + r.einkDataUrl());
+
 
         return ApiResponse.onSuccess(SuccessCode.OK, result);
     }

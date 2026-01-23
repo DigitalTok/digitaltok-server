@@ -32,6 +32,7 @@ public class ImageDerivationService {
      * 를 생성하고 각각 업로드한 URL을 반환한다.
      */
     public Result derive(InputStream originalImageStream) {
+        System.out.println("### storageService = " + storageService.getClass().getName());
         try {
             // 1) 원본 로드
             BufferedImage original = ImageIO.read(originalImageStream);

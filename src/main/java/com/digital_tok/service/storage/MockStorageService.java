@@ -1,10 +1,10 @@
 package com.digital_tok.service.storage;
 
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-/// ///S3 구성되면 Primary 삭제하기///////
-@Primary
+@Profile("dev")
 @Service
 public class MockStorageService implements StorageService {
 

@@ -2,9 +2,10 @@ package com.digital_tok.service.storage;
 
 import com.digital_tok.service.AmazonS3Manager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
+@Profile("prod")
 @Service
 @RequiredArgsConstructor
 public class S3StorageService implements StorageService {
@@ -13,13 +14,12 @@ public class S3StorageService implements StorageService {
 
     @Override
     public String uploadPreview(byte[] bytes, String key, String contentType) {
-        MultipartFile file = new ByteArrayMultipartFile(bytes, key, contentType);
-        return amazonS3Manager.uploadFile("preview", file);
+        return amazonS3Manager.uploadBytes(key, bytes, contentType);
     }
 
     @Override
     public String uploadEink(byte[] bytes, String key, String contentType) {
-        MultipartFile file = new ByteArrayMultipartFile(bytes, key, contentType);
-        return amazonS3Manager.uploadFile("eink", file);
+        return amazonS3Manager.uploadBytes(key, bytes, contentType);
     }
 }
+

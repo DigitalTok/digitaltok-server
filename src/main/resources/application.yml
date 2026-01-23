@@ -24,6 +24,8 @@ spring:
       credentials:
         access-key: ${AWS_ACCESS_KEY}
         secret-key: ${AWS_SECRET_KEY}
+  profiles:
+    active: prod
   # ... ?? ?? ...
   #  security:
   #    oauth2:

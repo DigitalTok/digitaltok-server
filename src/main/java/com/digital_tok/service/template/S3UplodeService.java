@@ -1,6 +1,6 @@
 package com.digital_tok.service.template;
 
-import software.amazon.awssdk.services.s3.model.PutObjectRequest; // 이게 있어야 .builder()가 됩니다.
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -14,7 +14,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class S3UplodeService {
 
-    private final S3Client s3Client; // AmazonS3 -> S3Client로 변경
+    private final S3Client s3Client;
 
     @Value("${spring.cloud.aws.s3.bucket}")
     private String bucket;
@@ -28,7 +28,7 @@ public class S3UplodeService {
                 .bucket(bucket)
                 .key(fileName)
                 .contentType("image/png")
-                .contentLength((long) imageBytes.length) // 여기서 메타데이터 설정
+                .contentLength((long) imageBytes.length)
                 .build();
 
         // 3. 업로드 실행

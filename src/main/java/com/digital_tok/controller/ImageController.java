@@ -218,14 +218,24 @@ public class ImageController {
     @Operation(summary = "이미지 바이너리 데이터 조회 API", description = "기기로 전송할 변환된 E-ink 바이너리 파일(.bin)의 URL을 조회합니다.")
     public ApiResponse<ImageResponseDTO.BinaryResultDto> getImageBinary(
             @PathVariable Long imageId) {
+        System.out.println("### HIT /binary imageId=" + imageId);
         Long userId = 1L;//더미 데이터-- 추후 jwt추출로 변경
         var r = imageService.getBinary(userId, imageId);
+        System.out.println("### Controller r.einkDataUrl=" + r.einkDataUrl());
 
         ImageResponseDTO.BinaryResultDto result = ImageResponseDTO.BinaryResultDto.builder()
                 .imageId(r.imageId())
                 .einkDataUrl(r.einkDataUrl())
                 .lastUsedAt(r.lastUsedAt())
                 .build();
+        System.out.println("### DTO result.einkDataUrl=" + result.getEinkDataUrl());
+
+
+        System.out.println("### CONTROLLER r.class=" + r.getClass());
+        System.out.println("### CONTROLLER r=" + r);
+        System.out.println("### CONTROLLER r.hash=" + System.identityHashCode(r));
+        System.out.println("### CONTROLLER r.eink=" + r.einkDataUrl());
+
 
         return ApiResponse.onSuccess(SuccessCode.OK, result);
     }

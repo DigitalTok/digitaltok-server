@@ -19,13 +19,13 @@ public class Image {
     @Column(name = "image_id")
     private Long imageId;
 
-    @Column(name = "original_url", length = 255, nullable = false)
+    @Column(name = "original_url", length = 2048, nullable = false)
     private String originalUrl;
 
-    @Column(name = "preview_url", length = 255)
+    @Column(name = "preview_url", length = 2048)
     private String previewUrl;
 
-    @Column(name = "eink_data_url", length = 255)
+    @Column(name = "eink_data_url", length = 2048)
     private String einkDataUrl;
 
     //@Column(name = "category", length = 50, nullable = false)

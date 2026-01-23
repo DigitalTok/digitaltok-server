@@ -48,7 +48,12 @@ public class ImageDerivationService {
 
             // 4) Preview PNG 생성
             byte[] previewPng = previewRenderer.renderPng(quantized);
-
+            //디버그용)png 파일 확인
+            java.nio.file.Path outDir = java.nio.file.Paths.get("debug-output");
+            java.nio.file.Files.createDirectories(outDir);
+            java.nio.file.Path outFile = outDir.resolve("preview_" + java.util.UUID.randomUUID() + ".png");
+            java.nio.file.Files.write(outFile, previewPng);
+            System.out.println("### PREVIEW PNG SAVED: " + outFile.toAbsolutePath());
             // 5) Eink binary 생성 (10000 bytes)
             byte[] einkBinary = binaryEncoder.encode(quantized);
 

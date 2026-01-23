@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import com.digital_tok.service.image.ImageDerivationService;
 
 import java.time.LocalDateTime;
 
@@ -20,6 +21,7 @@ public class ImageService {
     private final ImageRepository imageRepository;
     private final ImageMappingRepository imageMappingRepository;
     private final AmazonS3Manager s3Manager;
+    private final ImageDerivationService imageDerivationService;
 
     /**
      * 이미지 업로드: S3 업로드 + DB(image, image_mapping) 저장
@@ -27,27 +29,42 @@ public class ImageService {
      */
     public UploadResult uploadImage(MultipartFile file, String imageName, Long userId) {
 
-        // 1) S3 업로드
+        byte[] originalBytes;
+        try {
+            originalBytes = file.getBytes();
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to read uploaded file bytes", e);
+        }
+
+        // 1) S3 업로드 (원본)
+        // ⚠️ 가능하면 s3Manager도 bytes 업로드 버전이 있으면 그걸 쓰는 게 제일 좋음
         String originalUrl = s3Manager.uploadFile("images", file);
-        String previewUrl = originalUrl; // 지금은 원본을 미리보기로 재사용(임시)
+
+        // 2) e-ink 파생 생성
+        ImageDerivationService.Result derived;
+        try {
+            System.out.println("### DERIVE START ###");
+            derived = imageDerivationService.derive(new java.io.ByteArrayInputStream(originalBytes));
+            System.out.println("### DERIVE DONE ### preview=" + derived.previewUrl() + " eink=" + derived.einkDataUrl());
+        } catch (Exception e) {
+            System.out.println("### DERIVE FAIL ###");
+            e.printStackTrace();
+            derived = new ImageDerivationService.Result(null, null);
+        }
 
         LocalDateTime now = LocalDateTime.now();
 
-        // 2) image 저장
         Image image = Image.builder()
                 .originalUrl(originalUrl)
-                .previewUrl(previewUrl)
-                .einkDataUrl(null)
-                //.category(category)
+                .previewUrl(derived.previewUrl() != null ? derived.previewUrl() : originalUrl)
+                .einkDataUrl(derived.einkDataUrl())
                 .imageName(imageName)
                 .createdAt(now)
                 .deletedAt(null)
-                //.subwayTemplate(null)
                 .build();
 
         imageRepository.save(image);
 
-        // 3) image_mapping 저장
         ImageMapping mapping = ImageMapping.builder()
                 .userId(userId)
                 .image(image)
@@ -65,20 +82,21 @@ public class ImageService {
         Image image = imageRepository.findById(imageId)
                 .orElseThrow(() -> new IllegalArgumentException("image not found: " + imageId));
 
-        if (image.getPreviewUrl() != null && !image.getPreviewUrl().isBlank()) {
-            return new PreviewResult(image.getImageId(), image.getPreviewUrl(), LocalDateTime.now());
-        }
+        // previewUrl 없으면(예전 데이터) fallback으로 originalUrl이라도 반환
+        String url = (image.getPreviewUrl() != null && !image.getPreviewUrl().isBlank())
+                ? image.getPreviewUrl()
+                : image.getOriginalUrl();
 
-        String generatedPreviewUrl = "https://cdn.diring.com/images/preview/" + imageId + ".png";
-        image.updatePreviewUrl(generatedPreviewUrl);
-        imageRepository.save(image);
-
-        return new PreviewResult(image.getImageId(), generatedPreviewUrl, LocalDateTime.now());
+        return new PreviewResult(image.getImageId(), url, LocalDateTime.now());
     }
 
     public BinaryResult getBinary(Long userId, Long imageId) {
         Image image = imageRepository.findById(imageId)
                 .orElseThrow(() -> new IllegalArgumentException("image not found: " + imageId));
+
+        System.out.println("### getBinary imageId=" + imageId);
+        System.out.println("### entity.einkDataUrl=" + image.getEinkDataUrl());
+        System.out.println("### entity.previewUrl=" + image.getPreviewUrl());
 
         LocalDateTime now = LocalDateTime.now();
 
@@ -94,14 +112,18 @@ public class ImageService {
         imageMappingRepository.save(mapping);
 
         if (image.getEinkDataUrl() != null && !image.getEinkDataUrl().isBlank()) {
-            return new BinaryResult(image.getImageId(), image.getEinkDataUrl(), now);
+            BinaryResult br = new BinaryResult(image.getImageId(), image.getEinkDataUrl(), now);
+            System.out.println("### SERVICE br.class=" + br.getClass());
+            System.out.println("### SERVICE br=" + br);
+            System.out.println("### SERVICE br.hash=" + System.identityHashCode(br));
+            return br;
         }
 
-        String generatedEinkUrl = "https://cdn.diring.com/eink/" + imageId + ".bin";
-        image.updateEinkDataUrl(generatedEinkUrl);
-        imageRepository.save(image);
+        BinaryResult br = new BinaryResult(image.getImageId(), null, now);
+        System.out.println("### SERVICE br=" + br);
+        System.out.println("### SERVICE br.hash=" + System.identityHashCode(br));
+        return br;
 
-        return new BinaryResult(image.getImageId(), generatedEinkUrl, now);
     }
 
     // 반환용 record

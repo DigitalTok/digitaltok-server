@@ -28,11 +28,11 @@ public class ImageMapping {
     @Column(name = "is_favorite", nullable = false)
     private Boolean isFavorite;
 
-    @Column(name = "saved_at", nullable = false)
-    private LocalDateTime savedAt;
-
     @Column(name = "last_used_at")
     private LocalDateTime lastUsedAt;
+
+    @Column(name = "saved_at", nullable = false)
+    private LocalDateTime savedAt;
 
     public void touchLastUsedAt(LocalDateTime now) {
         this.lastUsedAt = now;

@@ -44,7 +44,8 @@ public class ImageDerivationService {
 
             // 3) 4색 양자화 (일단 디더링 OFF 권장)
             BufferedImage quantized =
-                    quantizer.quantizeTo4Colors(resized, EinkQuantizer.DitherMode.OFF);
+                    quantizer.quantizeTo4Colors(resized, EinkQuantizer.DitherMode.FLOYD_STEINBERG);
+
 
             // 4) Preview PNG 생성
             byte[] previewPng = previewRenderer.renderPng(quantized);
@@ -56,6 +57,14 @@ public class ImageDerivationService {
             System.out.println("### PREVIEW PNG SAVED: " + outFile.toAbsolutePath());
             // 5) Eink binary 생성 (10000 bytes)
             byte[] einkBinary = binaryEncoder.encode(quantized);
+            System.out.println("### BIN LEN=" + einkBinary.length);
+
+            //debug용)binary파일 로컬에 저장
+            java.nio.file.Path outBin = outDir.resolve("eink_" + java.util.UUID.randomUUID() + ".bin");
+            java.nio.file.Files.write(outBin, einkBinary);
+            System.out.println("### BIN SAVED: " + outBin.toAbsolutePath());
+
+
 
             // 6) 업로드
             String baseKey = "images/eink/" + UUID.randomUUID();

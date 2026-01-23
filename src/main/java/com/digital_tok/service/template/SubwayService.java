@@ -1,4 +1,4 @@
-package com.digital_tok.service;
+package com.digital_tok.service.template;
 
 import com.digital_tok.domain.SubwayTemplate;
 import com.digital_tok.global.apiPayload.code.ErrorCode;

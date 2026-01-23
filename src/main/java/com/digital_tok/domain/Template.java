@@ -5,9 +5,11 @@ import com.digital_tok.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Getter
+@SuperBuilder // 서브타입에서 슈퍼타입을 Builder로 사용가능하게해줌
 @NoArgsConstructor
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "dtype")

@@ -2,17 +2,16 @@ package com.digital_tok.controller;
 
 import com.digital_tok.convertor.TemplateConverter;
 import com.digital_tok.domain.SubwayTemplate;
+import com.digital_tok.dto.request.SubwayCreateRequest;
 import com.digital_tok.dto.response.TemplateResponseDTO;
 import com.digital_tok.global.apiPayload.ApiResponse;
 import com.digital_tok.global.apiPayload.code.SuccessCode;
-import com.digital_tok.service.SubwayService;
+import com.digital_tok.service.template.SubwayService;
+import com.digital_tok.service.template.SubwayTemplateService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,6 +22,7 @@ import java.util.List;
 public class SubwayController {
 
     private final SubwayService subwayService;
+    private final SubwayTemplateService subwayTemplateService;
     private final TemplateConverter templateConverter;
 
     @GetMapping("/templates")
@@ -46,5 +46,22 @@ public class SubwayController {
         TemplateResponseDTO.SubwayDetailDto result = templateConverter.toSubwayDetailDto(subwayTemplate);
 
         return ApiResponse.onSuccess(SuccessCode.OK, result);
+    }
+
+    /**
+     *
+     * application.yml: access-key, secret-key, region, bucket 정보가 올바르게 들어있는지 확인
+     * Headless 모드: 서버 배포 시 JVM 옵션 -Djava.awt.headless=true 해야함
+     */
+    @PostMapping("/api/templates/subway")
+    public ApiResponse<String> createSubwayTemplate(@RequestBody SubwayCreateRequest request) {
+
+        Long templateId = subwayTemplateService.createAndSaveSubwayTemplate(
+                request.getStationName(),
+                request.getStationNameEng(),
+                request.getLineName()
+        );
+
+        return ApiResponse.onSuccess(SuccessCode.OK, "성공적으로 생성되었습니다. ID: " + templateId);
     }
 }

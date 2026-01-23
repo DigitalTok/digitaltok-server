@@ -2,11 +2,13 @@ package com.digital_tok.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DiscriminatorValue("SUBWAY") // dtype 으로 구분되는 값
 @PrimaryKeyJoinColumn(name = "template_id") // template_id는 PK이자 FK임을 지정

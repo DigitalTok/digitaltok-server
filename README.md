@@ -11,7 +11,7 @@ http://3.37.213.174:8080/swagger-ui/index.html#
 
 ## 1. 🚩 프로젝트 개요
 - **개발 기간:** 2025.12.12 ~ 2026.02.19
-- **개발 인원:** Backend 3
+- **개발 인원:** 4명
 - **프로젝트 목적:**
 
 <br>
@@ -63,15 +63,17 @@ Resolves: #123
 <img width="2816" height="1536" alt="digitaltok 아키텍처구조" src="https://github.com/user-attachments/assets/f65c9d9c-9503-405d-bc6b-97a074a7efa3" />
 
 ### 4-2. ERD (Entity Relationship Diagram)
-*(여기에 ERD 이미지를 넣으세요)*
-<img width="1268" height="747" alt="스크린샷 2026-01-14 205456" src="https://github.com/user-attachments/assets/4f4ae8b4-ed71-4918-99e8-8cba38ba153a" />
+<img width="1553" height="958" alt="image" src="https://github.com/user-attachments/assets/c9bbada4-d5ea-4f07-b06b-35df1140d490" />
+
 
 
 <br>
 
 ## 5. ✨ 주요 기능 (Key Features)
-* **회원가입/로그인:** JWT 기반 인증, OAuth2 (Kakao, Google)
-* **이미지 생성:** S3를 이용한 이미지 업로드
+* **회원가입/로그인:** JWT 기반 인증, OAuth2
+* **이미지 생성:** 템플릿 이미지 생성 및 S3를 이용한 이미지 업로드
+* **이미지 변환:** 전자잉크 디스플레이 전송을 위한 이미지to바이너리 데이터 변환
+* **기기 연결:** 전자잉크 디스플레이 연동
 
 <br>
 
@@ -82,12 +84,17 @@ src
 ├── main
 │   ├── java
 │   │   └── com.example.project
-│   │       ├── common       # 공통 처리 (Exception, DTO)
-│   │       ├── config       # 설정 파일
-│   │       ├── controller   # 컨트롤러
-│   │       ├── domain       # 엔티티
-│   │       ├── repository   # 리포지토리
-│   │       └── service      # 비즈니스 로직
+│   │       ├── global          # 공통 처리 및 전역 설정
+│   │          ├── apiPayload   # 공통 처리 (GeneralExceptione, BaseCode)
+│   │          ├── config       # 설정 파일
+│   │       ├── controller      # 컨트롤러
+│   │       ├── convertor       # Entity, DTO 간의 변환
+│   │       ├── domain          # 엔티티
+│   │       ├── dto             # DTO 클래스
+│   │          ├── request      # request DTO
+│   │          ├── response     # response DTO
+│   │       ├── repository      # 리포지토리
+│   │       └── service         # 비즈니스 로직
 │   └── resources
 └── test
 

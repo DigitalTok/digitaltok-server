@@ -11,6 +11,8 @@ spring:
       hibernate:
         format_sql: true
         show_sql: true
+  storage:
+    type: s3
 
   # 최신 버전에서 cloud는 spring 밑에 있어야함
   cloud:
@@ -24,8 +26,8 @@ spring:
       credentials:
         access-key: ${AWS_ACCESS_KEY}
         secret-key: ${AWS_SECRET_KEY}
-  profiles:
-    active: prod
+  #profiles:
+  #  active: prod
   # ... ?? ?? ...
   #  security:
   #    oauth2:

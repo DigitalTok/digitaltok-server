@@ -10,7 +10,7 @@ import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
-public class SubwayTemplateService {
+public class SubwayTemplateService { // 지하철 이미지 템플릿 생성 관련 서비스
 
     private final Eink4ColorService imageGenerator;
     private final S3UplodeService s3Uploader;

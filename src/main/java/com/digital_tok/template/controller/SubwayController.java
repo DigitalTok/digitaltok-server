@@ -8,6 +8,7 @@ import com.digital_tok.global.apiPayload.ApiResponse;
 import com.digital_tok.global.apiPayload.code.SuccessCode;
 import com.digital_tok.template.service.SubwayService;
 import com.digital_tok.template.service.SubwayTemplateService;
+import com.digital_tok.template.service.SubwayTemplateUploadService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +24,8 @@ import java.util.List;
 public class SubwayController {
 
     private final SubwayService subwayService;
-    private final SubwayTemplateService subwayTemplateService;
     private final TemplateConverter templateConverter;
+    private final SubwayTemplateUploadService subwayTemplateUploadService;
 
     @GetMapping("/templates")
     @Operation(summary = "전체 지하철 역 목록 조회 API", description = "가나다 순으로 정렬된 지하철 역 템플릿 목록을 반환")
@@ -71,7 +72,7 @@ public class SubwayController {
     @Operation(summary = "지하철 역 이미지 생성 밎 저장", description = "지하철 역 정보를 입력하면 이미지를 생성하고 DB에 저장합니다.")
     public ApiResponse<String> createSubwayTemplate(@RequestBody SubwayCreateRequest request) {
 
-        Long templateId = subwayTemplateService.createAndSaveSubwayTemplate(
+        Long templateId = subwayTemplateUploadService.createAndSaveSubwayTemplate(
                 request.getStationName(),
                 request.getStationNameEng(),
                 request.getLineName()

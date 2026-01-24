@@ -8,6 +8,7 @@ import com.digital_tok.global.apiPayload.exception.GeneralException;
 import com.digital_tok.global.apiPayload.code.ErrorCode;
 import com.digital_tok.device.repository.DeviceRepository;
 import com.digital_tok.user.repository.TestUserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class DeviceService {
 
     private final DeviceRepository deviceRepository;

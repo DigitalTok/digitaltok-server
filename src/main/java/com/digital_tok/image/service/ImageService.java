@@ -26,6 +26,7 @@ public class ImageService {
      * 이미지 업로드: S3 업로드 + DB(image, image_mapping) 저장
      * (로그인 전이므로 userId는 더미로 받는 상태)
      */
+    // TODO: 이미지 업로드하는 과정은 Transaction에서 제외하고, DB수정하는 부분만 Transaction처리하면 좋을거같음 
     public UploadResult uploadImage(MultipartFile file, String imageName, Long userId) {
 
         byte[] originalBytes;
@@ -77,6 +78,7 @@ public class ImageService {
         return new UploadResult(image, mapping);
     }
 
+    @Transactional(readOnly = true)
     public PreviewResult getPreview(Long imageId) {
         Image image = imageRepository.findById(imageId)
                 .orElseThrow(() -> new IllegalArgumentException("image not found: " + imageId));
@@ -89,6 +91,7 @@ public class ImageService {
         return new PreviewResult(image.getImageId(), url, LocalDateTime.now());
     }
 
+    @Transactional(readOnly = true)
     public BinaryResult getBinary(Long userId, Long imageId) {
         Image image = imageRepository.findById(imageId)
                 .orElseThrow(() -> new IllegalArgumentException("image not found: " + imageId));

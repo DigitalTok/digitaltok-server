@@ -1,13 +1,14 @@
 package com.digital_tok.template.domain;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@SuperBuilder
 @DiscriminatorValue("VULNERABLE")
 @PrimaryKeyJoinColumn(name = "template_id")
 @Table(name = "vulnerable_template")

@@ -4,13 +4,16 @@ import com.digital_tok.user.domain.TestUser;
 import com.digital_tok.global.apiPayload.exception.GeneralException;
 import com.digital_tok.global.apiPayload.code.ErrorCode;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@NoArgsConstructor // JPA 필수 기본 생성자
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // JPA 필수 기본 생성자
+@AllArgsConstructor
+@Builder
+@Table(name = "device")
 public class Device {
 
     @Id

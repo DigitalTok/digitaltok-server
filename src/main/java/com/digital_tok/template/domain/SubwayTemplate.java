@@ -8,6 +8,7 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @DiscriminatorValue("SUBWAY") // dtype 으로 구분되는 값
 @PrimaryKeyJoinColumn(name = "template_id") // template_id는 PK이자 FK임을 지정
 @Table(name = "subway_template")

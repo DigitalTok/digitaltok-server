@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 @Tag(name = "User", description = "회원 관련 API (로그인, 회원가입, 정보 수정 등)")
 public class UserRestController {
 
@@ -24,7 +24,7 @@ public class UserRestController {
      * 설명: 비밀번호를 확인 후 회원을 탈퇴 처리(Soft Delete or Hard Delete)합니다.
      * 특징: URL에 ID를 포함하지 않고, Header의 토큰으로 유저를 식별합니다.
      */
-    @DeleteMapping("/")
+    @DeleteMapping("/me")
     @Operation(summary = "회원 탈퇴 API", description = "비밀번호 검증 후 회원 정보를 삭제(또는 비활성화)합니다.")
     public ApiResponse<String> withdraw(@RequestBody UserRequestDTO.WithdrawDto request) {
         // TODO: 회원 탈퇴 로직 구현
@@ -35,7 +35,7 @@ public class UserRestController {
      * 2. 비밀번호 변경 API
      * 설명: 현재 비밀번호와 새로운 비밀번호를 받아 변경합니다.
      */
-    @PatchMapping("/password")
+    @PatchMapping("/me/password")
     @Operation(summary = "비밀번호 변경 API", description = "기존 비밀번호 확인 후 새로운 비밀번호로 변경합니다.")
     public ApiResponse<String> changePassword(@RequestBody UserRequestDTO.ChangePasswordDto request) {
         // TODO: 비밀번호 변경 로직 구현
@@ -46,7 +46,7 @@ public class UserRestController {
      * 3. 이메일 주소 변경 API
      * 설명: 비밀번호 확인 후 새로운 이메일로 변경합니다.
      */
-    @PatchMapping("/email")
+    @PatchMapping("/me/email")
     @Operation(summary = "이메일 변경 API", description = "기존 비밀번호 확인 후 새로운 이메일로 변경합니다.")
     public ApiResponse<String> changeEmail(@RequestBody UserRequestDTO.ChangeEmailDto request) {
         // TODO: 이메일 변경 로직 구현
@@ -69,24 +69,5 @@ public class UserRestController {
                 .build();
 
         return ApiResponse.onSuccess(SuccessCode.OK, profile);
-    }
-
-    /**
-     * 5. 닉네임 수정 API
-     */
-    @PatchMapping("/me")
-    @Operation(summary = "닉네임 수정 API", description = "로그인한 유저의 닉네임을 수정합니다.")
-    public ApiResponse<UserResponseDTO.NicknameResultDto> updateNickname(@RequestBody UserRequestDTO.NicknameUpdateDto request) {
-        // TODO: 실제 서비스 로직 구현 필요 (더미 데이터 반환)
-        UserResponseDTO.NicknameResultDto updatedProfile = UserResponseDTO.NicknameResultDto.builder()
-                .userId(1L)
-                .name("조성하")
-                .nickname(request.getNickname()) // 요청 값 반영
-                .email("example@example.com")
-                .phone("010-1234-5678")
-                .updatedAt(LocalDateTime.now())
-                .build();
-
-        return ApiResponse.onSuccess(SuccessCode.OK, updatedProfile);
     }
 }

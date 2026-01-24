@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/devices")
+//TODO: RequstParam으로 받을건지, PathVariable로 받아서 URL mapping 시킬건지 정해야함
 @Tag(name = "Device", description = "기기 관련 API (상태 조회, 연결, 해제 등)")
 public class DeviceController {
 

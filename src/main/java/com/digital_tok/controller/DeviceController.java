@@ -24,8 +24,8 @@ public class DeviceController {
     /**
      * 기기 연결 API
      */
-    @PostMapping("/connect")
-    @Operation(summary = "기기 연결 API", description = "기기를 연결합니다 (임시).")
+    @PostMapping
+    @Operation(summary = "기기 연결 API", description = "기기를 연결합니다 (NFC UID 기반).")
     public ApiResponse<DeviceResponseDTO.Result> connectDevice(
             @RequestBody @Valid DeviceRequestDTO request
     ) {
@@ -36,24 +36,24 @@ public class DeviceController {
     /**
      * 기기 연결 해제 API
      */
-    @DeleteMapping("/{deviceId}/disconnect")
-    @Operation(summary = "기기 연결 해제 API", description = "기기와의 연결을 해제합니다 (임시).")
+    @DeleteMapping
+    @Operation(summary = "기기 연결 해제 API", description = "기기와의 연결을 해제합니다 (NFC UID 기반).")
     public ApiResponse<DeviceResponseDTO.Result> disconnectDevice(
-            @PathVariable Long deviceId
+            @RequestParam("nfcUid") String nfcUid
     ) {
-        DeviceResponseDTO.Result result = deviceService.disconnectDevice(deviceId);
+        DeviceResponseDTO.Result result = deviceService.disconnectDevice(nfcUid);
         return ApiResponse.onSuccess(SuccessCode.DEVICE_DISCONNECT_SUCCESS, result);
     }
 
     /**
      * 기기 상태 조회 API
      */
-    @GetMapping("/{deviceId}/status")
-    @Operation(summary = "기기 상태 조회 API", description = "기기의 연결 상태를 조회합니다 (임시).")
+    @GetMapping
+    @Operation(summary = "기기 상태 조회 API", description = "기기의 연결 상태를 조회합니다 (NFC UID 기반).")
     public ApiResponse<DeviceResponseDTO.Result> getDeviceStatus(
-            @PathVariable Long deviceId
+            @RequestParam("nfcUid") String nfcUid
     ) {
-        DeviceResponseDTO.Result result = deviceService.getDeviceStatus(deviceId);
+        DeviceResponseDTO.Result result = deviceService.getDeviceStatus(nfcUid);
         return ApiResponse.onSuccess(SuccessCode.DEVICE_STATUS_SUCCESS, result);
     }
 }

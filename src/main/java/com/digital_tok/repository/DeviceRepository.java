@@ -7,6 +7,6 @@ import java.util.Optional;
 
 public interface DeviceRepository extends JpaRepository<Device, Long> {
 
-    // ID로 기기 정보를 조회
-    Optional<Device> findById(Long id);
+    // NFC UID로 기기 정보를 조회
+    Optional<Device> findByNfcUid(String nfcUid);
 }

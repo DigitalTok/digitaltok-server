@@ -58,3 +58,6 @@ src/main/resources/application-secret.yml
 # 혹시 모를 로컬 테스트용 설정 파일들
 application-prod.yml
 application-secret.yml
+
+#debug용 파일은 업로드 되지 않게
+debug-output

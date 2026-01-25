@@ -38,8 +38,8 @@ public class ImageResponseDTO {
         @Schema(description = "이미지 미리보기 URL", example = "https://cdn.dirring.com/images/preview/301.png")
         private String previewUrl;
 
-        @Schema(description = "이미지 카테고리 (SUBWAY_PRESET / USER_PHOTO)", example = "SUBWAY_PRESET")
-        private String category;
+        //@Schema(description = "이미지 카테고리 (SUBWAY_PRESET / USER_PHOTO)", example = "SUBWAY_PRESET")
+        //private String category;
 
         @Schema(description = "이미지 원본 파일명", example = "강남_2호선")
         private String imageName;
@@ -50,8 +50,8 @@ public class ImageResponseDTO {
         @Schema(description = "마지막 사용 시각", example = "2026-01-12T12:34:56")
         private LocalDateTime lastUsedAt;
 
-        @Schema(description = "지하철 템플릿 ID (없으면 null)", example = "12")
-        private Long subwayTemplateId;
+        //@Schema(description = "지하철 템플릿 ID (없으면 null)", example = "12")
+        //private Long subwayTemplateId;
     }
 
     /**
@@ -83,8 +83,8 @@ public class ImageResponseDTO {
         @Schema(description = "E-ink 데이터 URL", example = "null")
         private String einkDataUrl;
 
-        @Schema(description = "카테고리", example = "USER_PHOTO")
-        private String category;
+        //@Schema(description = "카테고리", example = "USER_PHOTO")
+        //private String category;
 
         @Schema(description = "이미지 이름", example = "myphoto_001")
         private String imageName;
@@ -95,8 +95,8 @@ public class ImageResponseDTO {
         @Schema(description = "삭제 일시")
         private LocalDateTime deletedAt;
 
-        @Schema(description = "지하철 템플릿 ID")
-        private Long subwayTemplateId;
+        //@Schema(description = "지하철 템플릿 ID")
+        //private Long subwayTemplateId;
     }
 
     @Builder

@@ -1,3 +1,4 @@
+//ImageService랑 S3 연결
 package com.digital_tok.service.storage;
 
 public interface StorageService {

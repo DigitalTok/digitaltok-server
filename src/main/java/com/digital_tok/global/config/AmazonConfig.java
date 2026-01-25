@@ -8,6 +8,10 @@ import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.auth.credentials.*;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import io.awspring.cloud.s3.S3Template;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+
 
 @Configuration
 public class AmazonConfig {
@@ -21,7 +25,6 @@ public class AmazonConfig {
     @Value("${spring.cloud.aws.region.static}")
     private String region;
 
-    // 1. 인증 정보를 제공
     @Bean
     public AwsCredentialsProvider awsCredentialsProvider() {
         AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey);
@@ -30,11 +33,10 @@ public class AmazonConfig {
 
     @Bean
     public S3Client s3Client(AwsCredentialsProvider credentialsProvider) {
-        //AwsCredentials awsCredentials1 = AwsBasicCredentials.create(accessKey, secretKey);
-
         return S3Client.builder()
-                .region(Region.of(region)) // String을 Region 객체로 변환
+                .region(Region.of(region))
                 .credentialsProvider(credentialsProvider)
                 .build();
     }
 }
+

@@ -3,15 +3,17 @@ package com.digital_tok.service;
 import com.digital_tok.domain.Device;
 import com.digital_tok.dto.request.DeviceRequestDTO;
 import com.digital_tok.dto.response.DeviceResponseDTO;
+import com.digital_tok.domain.TestUser;
+import com.digital_tok.global.DeviceStatus;
 import com.digital_tok.global.apiPayload.exception.GeneralException;
 import com.digital_tok.global.apiPayload.code.ErrorCode;
 import com.digital_tok.repository.DeviceRepository;
+import com.digital_tok.repository.TestUserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import com.digital_tok.domain.TestUser;
-import com.digital_tok.repository.TestUserRepository; // TestUser 조회를 위한 Repository
+import java.time.LocalDateTime;
 
 @Slf4j
 @Service
@@ -19,39 +21,45 @@ import com.digital_tok.repository.TestUserRepository; // TestUser 조회를 위�
 public class DeviceService {
 
     private final DeviceRepository deviceRepository;
-    private final TestUserRepository testUserRepository; // TestUser 관련 조회를 위한 Repository
+    private final TestUserRepository testUserRepository;
+
+    /**
+     * 사용자 조회 (임시)
+     * 토큰 기반 처리로 대체할 예정
+     */
+    private TestUser getCurrentUser() {
+        // TODO: JWT 또는 SecurityContext에서 사용자 정보를 가져오는 로직으로 대체
+        Long dummyUserId = 1L; // 임시 사용자 ID
+        return testUserRepository.findById(dummyUserId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+    }
 
     /**
      * 기기 연결
      */
     public DeviceResponseDTO.Result connectDevice(DeviceRequestDTO request) {
-        // 1. 임시 사용자 조회
-        Long dummyUserId = 1L; // 사용자 토큰 인증 대체용 임시 ID
-        TestUser user = testUserRepository.findById(dummyUserId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+        TestUser user = getCurrentUser(); // 현재 사용자
 
-        /* 2. 사용자가 이미 다른 기기와 연결되어 있는지 확인
-        if (user.getDevice() != null) {
-            throw new GeneralException(ErrorCode.DEVICE_ALREADY_CONNECTED);
-        }
-         */
-
-        // 3. 요청된 기기를 데이터베이스에서 조회
-        Device device = deviceRepository.findById(request.getDeviceId())
+        // NFC UID로 기기 조회
+        Device device = deviceRepository.findByNfcUid(request.getNfcUid())
                 .orElseThrow(() -> new GeneralException(ErrorCode.DEVICE_NOT_FOUND));
 
-        // 4. 기기가 이미 다른 사용자와 연결되어 있는 경우 예외 처리
+        // 삭제된 기기는 사용할 수 없음
+        if (device.getDeletedAt() != null) {
+            throw new GeneralException(ErrorCode.DEVICE_NOT_FOUND);
+        }
+
+        // 기기가 이미 특정 사용자와 연결된 경우
         if (device.getUser() != null) {
             throw new GeneralException(ErrorCode.DEVICE_ALREADY_CONNECTED);
         }
 
-        // 5. 기기를 연결 (엔티티의 connect 메서드 활용)
+        // 기기 연결
         device.connect(user);
-        deviceRepository.save(device);
+        device = deviceRepository.save(device);
 
-        log.info("임시 User ID {}가 기기 ID {}와 연결되었습니다.", dummyUserId, device.getId());
+        log.info("사용자 {}가 기기 NFC UID {}를 연결했습니다.", user.getId(), request.getNfcUid());
 
-        // 6. 연결 결과 반환
         return DeviceResponseDTO.Result.builder()
                 .deviceId(device.getId())
                 .status(device.getStatus().name())
@@ -62,28 +70,24 @@ public class DeviceService {
     /**
      * 기기 연결 해제
      */
-    public DeviceResponseDTO.Result disconnectDevice(Long deviceId) {
-        // 1. 임시 사용자 조회
-        Long dummyUserId = 1L; // 사용자 토큰 인증 대체용 임시 ID
-        TestUser user = testUserRepository.findById(dummyUserId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+    public DeviceResponseDTO.Result disconnectDevice(String nfcUid) {
+        TestUser user = getCurrentUser(); // 현재 사용자
 
-        // 2. 요청된 기기를 데이터베이스에서 조회
-        Device device = deviceRepository.findById(deviceId)
+        // NFC UID로 기기 조회
+        Device device = deviceRepository.findByNfcUid(nfcUid)
                 .orElseThrow(() -> new GeneralException(ErrorCode.DEVICE_NOT_FOUND));
 
-        // 3. 연결되지 않았거나 현재 사용자와 다르면 예외 처리
-        if (!device.getUser().getId().equals(user.getId())) {
-            throw new GeneralException(ErrorCode.DEVICE_NOT_FOUND);
+        // 이미 연결된 사용자가 없는 경우
+        if (device.getUser() == null || !device.getUser().getId().equals(user.getId())) {
+            throw new GeneralException(ErrorCode.DEVICE_NOT_FOUND); // 연결 권한 없음
         }
 
-        // 4. 기기 연결 해제
+        // 기기 연결 해제
         device.disconnect();
-        deviceRepository.save(device);
+        device = deviceRepository.save(device);
 
-        log.info("임시 User ID {}가 기기 ID {}와의 연결을 해제했습니다.", dummyUserId, deviceId);
+        log.info("사용자 {}가 기기 NFC UID {}와의 연결을 해제했습니다.", user.getId(), nfcUid);
 
-        // 5. 연결 해제 결과 반환
         return DeviceResponseDTO.Result.builder()
                 .deviceId(device.getId())
                 .status(device.getStatus().name())
@@ -94,22 +98,18 @@ public class DeviceService {
     /**
      * 기기 상태 조회
      */
-    public DeviceResponseDTO.Result getDeviceStatus(Long deviceId) {
-        // 1. 임시 사용자 조회
-        Long dummyUserId = 1L; // 사용자 토큰 인증 대체용 임시 ID
-        TestUser user = testUserRepository.findById(dummyUserId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+    public DeviceResponseDTO.Result getDeviceStatus(String nfcUid) {
+        TestUser user = getCurrentUser(); // 현재 사용자
 
-        // 2. 요청된 기기를 데이터베이스에서 조회
-        Device device = deviceRepository.findById(deviceId)
+        // NFC UID로 기기 조회
+        Device device = deviceRepository.findByNfcUid(nfcUid)
                 .orElseThrow(() -> new GeneralException(ErrorCode.DEVICE_NOT_FOUND));
 
-        // 3. 사용자와 연결된 기기인지 확인
+        // 사용자와 연결된 기기인지 확인
         if (device.getUser() == null || !device.getUser().getId().equals(user.getId())) {
-            throw new GeneralException(ErrorCode.DEVICE_NOT_FOUND);
+            throw new GeneralException(ErrorCode.DEVICE_NOT_FOUND); // 권한 없음
         }
 
-        // 4. 기기 상태 반환
         return DeviceResponseDTO.Result.builder()
                 .deviceId(device.getId())
                 .status(device.getStatus().name())

@@ -67,22 +67,28 @@ jobs:
           scp -i private_key.pem -o StrictHostKeyChecking=no "$jar_file" $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/digitalTok.jar
           
           # 실행 스크립트 생성 (run.sh)
-          # 여기서는 따옴표 없는 EOF를 써서 GitHub Actions 변수가 들어가게 합니다.
           cat <<EOF > run.sh
           #!/bin/bash
+          
+          # 1. 기존 자바 프로세스 강제 종료
           pgrep java | xargs -r kill -9
           sleep 5
           
-          export DB_URL="${{ secrets.DB_URL }}"
-          export DB_USERNAME="${{ secrets.DB_USERNAME }}"
-          export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
-          export AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}"
-          export AWS_SECRET_KEY="${{ secrets.AWS_SECRET_KEY }}"
+          # DB 및 AWS 환경변수 설정
+          export DB_URL='${{ secrets.DB_URL }}'
+          export DB_USERNAME='${{ secrets.DB_USERNAME }}'
+          export DB_PASSWORD='${{ secrets.DB_PASSWORD }}'
+          export AWS_ACCESS_KEY='${{ secrets.AWS_ACCESS_KEY }}'
+          export AWS_SECRET_KEY='${{ secrets.AWS_SECRET_KEY }}'
           export SPRING_CLOUD_AWS_REGION_STATIC=ap-northeast-2
           
+          # 서버 실행 명령어
+          # -Djwt.secret 옵션으로 스프링이 찾는 이름에 맞춰서 값을 직접 넣어줌
           nohup java -Duser.timezone=Asia/Seoul \
-            -DJWT_SECRET_KEY='${{ secrets.JWT_SECRET_KEY }}' \
-            -jar /home/$EC2_USERNAME/digitalTok.jar > app.log 2>&1 &
+          -Djwt.secret='${{ secrets.JWT_SECRET_KEY }}' \
+          -Djwt.access-token-validity-in-seconds=1800 \
+          -Djwt.refresh-token-validity-in-seconds=604800 \
+          -jar /home/$EC2_USERNAME/digitalTok.jar > app.log 2>&1 &
           EOF
           
           # 스크립트 전송 및 실행

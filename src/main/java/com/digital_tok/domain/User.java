@@ -65,4 +65,8 @@ public class User extends BaseEntity {
     public void withdraw() {
         this.status = UserStatus.INACTIVE;
     }
+
+    // 이메일 변경
+    public void updateEmail(String email) {
+        this.email = email;}
 }

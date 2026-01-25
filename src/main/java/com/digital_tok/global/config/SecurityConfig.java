@@ -1,5 +1,8 @@
 package com.digital_tok.global.config;
 
+import com.digital_tok.global.security.JwtAuthenticationFilter;
+import com.digital_tok.global.security.JwtTokenProvider;
+import com.digital_tok.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,11 +13,15 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final JwtTokenProvider jwtTokenProvider;
+    private final UserRepository userRepository;
 
     // 1. 비밀번호 암호화 Bean 등록 (BCrypt 방식)
     // 회원가입 시 비밀번호를 암호화하거나, 로그인 시 비밀번호를 확인할 때 사용합니다.
@@ -46,10 +53,11 @@ public class SecurityConfig {
 
                         // 그 외 모든 요청은 인증(로그인) 필요
                         .anyRequest().authenticated()
-                );
+                )
 
-        // TODO: [Step 6]에서 JwtAuthenticationFilter를 만든 후 여기에 추가할 예정입니다.
-        // .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+        // 필터 등록 (UsernamePasswordAuthenticationFilter 앞에 실행)
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, userRepository),
+                UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

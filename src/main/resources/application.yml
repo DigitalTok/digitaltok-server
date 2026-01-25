@@ -42,3 +42,10 @@ spring:
   #            scope: profile_nickname
   #            client-name: Kakao
   # ... ?? ?? ...
+
+  # JWT 설정
+jwt:
+  # 시스템 환경 변수 중 JWT_SECRET_KEY 값을 가져오고, 없으면 기본값(뒷부분)을 씁니다.
+  secret: ${JWT_SECRET_KEY}
+  access-token-validity-in-seconds: 3600
+  refresh-token-validity-in-seconds: 1209600

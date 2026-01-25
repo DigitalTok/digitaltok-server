@@ -78,6 +78,7 @@ jobs:
           export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
           export AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}"
           export AWS_SECRET_KEY="${{ secrets.AWS_SECRET_KEY }}"
+          export JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}"
           export SPRING_CLOUD_AWS_REGION_STATIC=ap-northeast-2
           
           nohup java -Duser.timezone=Asia/Seoul -jar /home/$EC2_USERNAME/digitalTok.jar > app.log 2>&1 &

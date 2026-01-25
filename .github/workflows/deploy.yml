@@ -70,7 +70,7 @@ jobs:
           # 여기서는 따옴표 없는 EOF를 써서 GitHub Actions 변수가 들어가게 합니다.
           cat <<EOF > run.sh
           #!/bin/bash
-          pgrep java | xargs -r kill -15
+          pgrep java | xargs -r kill -9
           sleep 5
           
           export DB_URL="${{ secrets.DB_URL }}"
@@ -78,10 +78,11 @@ jobs:
           export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
           export AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}"
           export AWS_SECRET_KEY="${{ secrets.AWS_SECRET_KEY }}"
-          export JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}"
           export SPRING_CLOUD_AWS_REGION_STATIC=ap-northeast-2
           
-          nohup java -Duser.timezone=Asia/Seoul -jar /home/$EC2_USERNAME/digitalTok.jar > app.log 2>&1 &
+          nohup java -Duser.timezone=Asia/Seoul \
+            -DJWT_SECRET_KEY='${{ secrets.JWT_SECRET_KEY }}' \
+            -jar /home/$EC2_USERNAME/digitalTok.jar > app.log 2>&1 &
           EOF
           
           # 스크립트 전송 및 실행

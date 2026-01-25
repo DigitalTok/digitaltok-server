@@ -2,6 +2,7 @@ package com.digital_tok.service.user;
 
 import com.digital_tok.domain.User;
 import com.digital_tok.dto.request.UserRequestDTO;
+import com.digital_tok.dto.response.UserResponseDTO;
 import com.digital_tok.global.apiPayload.code.ErrorCode;
 import com.digital_tok.global.apiPayload.exception.GeneralException;
 import com.digital_tok.repository.UserRepository;
@@ -96,5 +97,20 @@ public class UserService {
     private User getUserById(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+    }
+
+    /**
+     * 5. 내 프로필 조회
+     */
+    public UserResponseDTO.MyProfileDto getProfile(Long userId) {
+        User user = getUserById(userId);
+
+        return UserResponseDTO.MyProfileDto.builder()
+                .userId(user.getId())
+                .name(user.getName())
+                .nickname(user.getNickname())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .build();
     }
 }

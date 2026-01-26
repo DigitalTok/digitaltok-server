@@ -25,10 +25,10 @@ public class UserRequestDTO {
         private String newEmail;    // 필수 (변경할 새 이메일)
     }
 
-    // 4. 닉네임 변경 요청
-    @Getter
-    public static class NicknameUpdateDto {
-        @Schema(description = "변경하려는 새로운 닉네임", example = "새로운 닉네임")
-        private String nickname; // 유저 별명
-    }
+    // 4. 닉네임 변경 요청 [삭제]
+//    @Getter
+//    public static class NicknameUpdateDto {
+//        @Schema(description = "변경하려는 새로운 닉네임", example = "새로운 닉네임")
+//        private String nickname; // 유저 별명
+//    }
 }

@@ -56,10 +56,10 @@ public class User extends BaseEntity {
     }
 
     // 정보 수정
-    public void updateProfile(String nickname, String profileImageUrl) {
-        this.nickname = nickname;
-        this.profileImageUrl = profileImageUrl;
-    }
+//    public void updateProfile(String nickname, String profileImageUrl) {
+//        this.nickname = nickname;
+//        this.profileImageUrl = profileImageUrl;
+//    }
 
     // 회원 탈퇴 (Soft Delete)
     public void withdraw() {

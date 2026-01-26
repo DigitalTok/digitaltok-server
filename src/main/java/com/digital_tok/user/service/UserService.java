@@ -77,21 +77,21 @@ public class UserService {
 
     /**
      * 4. 닉네임 변경
-     * 설명: 닉네임 중복 검사 -> 변경
+     * 설명: 닉네임 중복 검사 -> 변경 [닉네임 변경 기능 삭제]
      */
-    @Transactional
-    public void updateNickname(Long userId, UserRequestDTO.NicknameUpdateDto request) {
-        User user = getUserById(userId);
-
-        // 닉네임 중복 검사 (기존 닉네임과 다를 경우에만)
-        if (!user.getNickname().equals(request.getNickname()) &&
-                userRepository.existsByNickname(request.getNickname())) {
-            throw new GeneralException(ErrorCode.BAD_REQUEST); // 중복된 닉네임
-        }
-
-        // 닉네임 변경 (프로필 이미지는 유지)
-        user.updateProfile(request.getNickname(), user.getProfileImageUrl());
-    }
+//    @Transactional
+//    public void updateNickname(Long userId, UserRequestDTO.NicknameUpdateDto request) {
+//        User user = getUserById(userId);
+//
+//        // 닉네임 중복 검사 (기존 닉네임과 다를 경우에만)
+//        if (!user.getNickname().equals(request.getNickname()) &&
+//                userRepository.existsByNickname(request.getNickname())) {
+//            throw new GeneralException(ErrorCode.BAD_REQUEST); // 중복된 닉네임
+//        }
+//
+//        // 닉네임 변경 (프로필 이미지는 유지)
+//        user.updateProfile(request.getNickname(), user.getProfileImageUrl());
+//    }
 
     // 내부 헬퍼 메서드: ID로 유저 찾기 (반복 코드 제거)
     private User getUserById(Long userId) {

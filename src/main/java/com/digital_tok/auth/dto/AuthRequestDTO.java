@@ -8,8 +8,8 @@ public class AuthRequestDTO {
     public static class JoinDto {
         private String email;       // 필수
         private String password;    // 필수
-        private String nickname;    // 필수
-        private String name;        // 선택
+        //private String nickname;    // 필수
+        //private String name;        // 선택
         private String phoneNumber; // 선택
     }
 

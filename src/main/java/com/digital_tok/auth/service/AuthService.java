@@ -16,6 +16,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -36,18 +38,21 @@ public class AuthService {
             throw new GeneralException(ErrorCode.MEMBER_ALREADY_REGISTERED);
         }
 
-        // 1-2. 닉네임 중복 검사 (선택 사항이지만 안전을 위해 추가)
-        if (userRepository.existsByNickname(request.getNickname())) {
-            // 닉네임 중복 에러 코드가 없다면 BAD_REQUEST 사용
-            throw new GeneralException(ErrorCode.BAD_REQUEST);
+        // 1-2. 닉네임 랜덤 생성 (예: User_a1b2c3d4)
+        String randomNickname = "User_" + UUID.randomUUID().toString().substring(0, 8);
+
+        // 혹시 모를 중복 방지를 위해 while문으로 체크 가능하나, UUID 8자리 충돌 확률은 매우 낮으므로 생략 가능.
+        // 필요하다면 아래와 같이 추가
+        while (userRepository.existsByNickname(randomNickname)) {
+            randomNickname = "User_" + UUID.randomUUID().toString().substring(0, 8);
         }
 
         // 1-3. User 엔티티 생성 및 비밀번호 암호화
         User newUser = User.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword())) // 암호화 필수
-                .nickname(request.getNickname())
-                .name(request.getName())
+                .nickname(randomNickname) //랜덤 닉네임 적용
+                //.name(request.getName())
                 .phone(request.getPhoneNumber())
                 .role(Role.ROLE_USER)
                 .status(UserStatus.ACTIVE)

@@ -107,7 +107,7 @@ public class UserService {
 
         return UserResponseDTO.MyProfileDto.builder()
                 .userId(user.getId())
-                .name(user.getName())
+                //.name(user.getName())
                 .nickname(user.getNickname())
                 .email(user.getEmail())
                 .phone(user.getPhone())

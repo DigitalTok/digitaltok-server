@@ -169,6 +169,9 @@ public class ImageResponseDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class FavoriteResultDto {
+        @Schema(description = "유저 ID", example = "10")
+        private Long userId;
+
         @Schema(description = "이미지 ID", example = "55")
         private Long imageId;
 

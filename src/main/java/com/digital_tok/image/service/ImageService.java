@@ -155,6 +155,31 @@ public class ImageService {
                 .items(items)
                 .build();
     }
+    @Transactional
+    public ImageResponseDTO.FavoriteResultDto updateFavorite(Long userId, Long imageId, Boolean isFavorite) {
+
+        if (isFavorite == null) {
+            throw new IllegalArgumentException("isFavorite is required");
+        }
+
+        ImageMapping mapping = imageMappingRepository.findByUserIdAndImage_ImageId(userId, imageId)
+                .orElseThrow(() -> new IllegalArgumentException("image mapping not found. userId=" + userId + ", imageId=" + imageId));
+
+        // 즐겨찾기 값 변경
+        // (setter 없으니 ImageMapping에 update 메서드 하나 추가하는 게 깔끔)
+        mapping.updateFavorite(isFavorite);
+
+        // JPA dirty checking으로 저장되지만, 명시적으로 save 해도 OK
+        imageMappingRepository.save(mapping);
+
+        return ImageResponseDTO.FavoriteResultDto.builder()
+                .userId(userId)
+                .imageId(imageId)
+                .isFavorite(mapping.getIsFavorite())
+                .updatedAt(LocalDateTime.now())
+                .build();
+    }
+
 
     // 반환용 record
     public record UploadResult(Image image, ImageMapping mapping) {}

@@ -220,19 +220,11 @@ public class ImageController {
     @Operation(summary = "이미지 즐겨찾기 등록/해제 API", description = "이미지의 즐겨찾기 상태를 변경합니다.")
     public ApiResponse<ImageResponseDTO.FavoriteResultDto> toggleFavorite(
             @PathVariable Long imageId,
+            @RequestParam Long userId,
             @RequestBody ImageRequestDTO.FavoriteDto request
     ) {
 
-        // TODO: 실제 DB 업데이트 로직 구현 (isFavorite 값에 따라 등록/해제 처리)
-
-        // 더미 데이터 생성
-        ImageResponseDTO.FavoriteResultDto result = ImageResponseDTO.FavoriteResultDto.builder()
-                .imageId(imageId)
-                .isFavorite(request.getIsFavorite()) // 요청받은 값을 그대로 반환 (잘 반영됐는지 확인용)
-                .favoriteCount(request.getIsFavorite() ? 2 : 1) // 즐겨찾기 등록하면 1 증가된 값 나오게함.
-                .updatedAt(LocalDateTime.of(2026, 1, 12, 22, 20, 10))
-                .build();
-
+        var result = imageService.updateFavorite(userId, imageId, request.getIsFavorite());
         return ApiResponse.onSuccess(SuccessCode.OK, result);
     }
 }

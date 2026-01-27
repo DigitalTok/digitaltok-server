@@ -37,6 +37,10 @@ public class ImageMapping {
     public void touchLastUsedAt(LocalDateTime now) {
         this.lastUsedAt = now;
     }
+    public void updateFavorite(Boolean isFavorite) {
+        this.isFavorite = isFavorite;
+    }
+
 
     //notnull 일때 저장실패 막음
     @PrePersist

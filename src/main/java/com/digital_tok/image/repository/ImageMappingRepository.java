@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public interface ImageMappingRepository extends JpaRepository<ImageMapping, Long> {
 
-    Optional<ImageMapping> findByUserIdAndImage(Long userId, Image image);
+    //Optional<ImageMapping> findByUserIdAndImage(Long userId, Long imageId);
 
     Optional<ImageMapping> findByUserIdAndImage_ImageId(Long userId, Long imageId);
     Page<ImageMapping>

@@ -19,26 +19,32 @@ public class S3UploadService {
     @Value("${spring.cloud.aws.s3.bucket}")
     private String bucket;
 
+    // 기존 메서드 (내부에서 범용 메서드 호출하도록 변경)
     public String upload(byte[] imageBytes, String directoryPath) {
-        // 1. 파일명 생성
-        String fileName = directoryPath + "/" + UUID.randomUUID() + ".png";
+        return upload(imageBytes, directoryPath, "png", "image/png");
+    }
 
-        // 2. 업로드 요청 생성 (Builder 패턴 사용)
+    // 확장자와 Content-Type을 지정할 수 있는 범용 업로드 메서드
+    public String upload(byte[] fileBytes, String directoryPath, String extension, String contentType) {
+        // 1. 파일명 생성
+        String fileName = directoryPath + "/" + UUID.randomUUID() + "." + extension;
+
+        // 2. 업로드 요청 생성
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
                 .key(fileName)
-                .contentType("image/png")
-                .contentLength((long) imageBytes.length)
+                .contentType(contentType)
+                .contentLength((long) fileBytes.length)
                 .build();
 
         // 3. 업로드 실행
         try {
-            s3Client.putObject(putObjectRequest, RequestBody.fromBytes(imageBytes));
+            s3Client.putObject(putObjectRequest, RequestBody.fromBytes(fileBytes));
         } catch (Exception e) {
-            throw new RuntimeException("S3 업로드 실패", e);
+            throw new RuntimeException("S3 업로드 실패: " + fileName, e);
         }
 
-        // 4. URL 반환 (V2 방식)
+        // 4. URL 반환
         return s3Client.utilities().getUrl(GetUrlRequest.builder()
                 .bucket(bucket)
                 .key(fileName)

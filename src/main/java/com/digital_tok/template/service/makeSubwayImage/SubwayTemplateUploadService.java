@@ -1,8 +1,14 @@
 package com.digital_tok.template.service.makeSubwayImage;
 
+import com.digital_tok.image.service.processing.EinkBinaryEncoder;
+import com.digital_tok.image.service.processing.EinkEncodingOption;
+import com.digital_tok.image.service.processing.EinkQuantizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 @Service
@@ -12,6 +18,11 @@ public class SubwayTemplateUploadService { // 이미지 생성 후 S3에 업로�
     private final Eink4ColorService imageGenerator;
     private final S3UploadService s3Uploader;
     private final SubwayTemplateService subwayTemplateService;
+
+    // 이미지 처리용 객체 생성
+    private final EinkEncodingOption encodingOption = new EinkEncodingOption();
+    private final EinkQuantizer quantizer = new EinkQuantizer();
+    private final EinkBinaryEncoder binaryEncoder = new EinkBinaryEncoder(encodingOption);
 
     public Long createAndSaveSubwayTemplate(String nameKor, String nameEng, String lineName) {
 
@@ -23,10 +34,29 @@ public class SubwayTemplateUploadService { // 이미지 생성 후 S3에 업로�
             throw new RuntimeException("이미지 생성 오류", e);
         }
 
-        // 2. S3 업로드
-        String uploadedImageUrl = s3Uploader.upload(imageBytes, "template/subway");
+        // 2. 바이너리 데이터 변환
+        byte[] binaryBytes;
+        try {
+            // 2-1. byte[] -> BufferedImage 변환
+            ByteArrayInputStream bais = new ByteArrayInputStream(imageBytes);
+            BufferedImage originalImage = ImageIO.read(bais);
 
-        // 3. DB 저장 (DB 작업 -> 트랜잭션 -> 별도 호출)
-        return subwayTemplateService.saveToDatabase(nameKor, nameEng, lineName, uploadedImageUrl);
+            // 2-2. 4색 양자화 (Quantization)
+            // 텍스트/도형 위주의 템플릿이므로 Dithering은 OFF로 설정하여 깔끔하게 처리
+            BufferedImage quantizedImage = quantizer.quantizeTo4Colors(originalImage, EinkQuantizer.DitherMode.OFF);
+
+            // 2-3. 바이너리 인코딩 (.bin)
+            binaryBytes = binaryEncoder.encode(quantizedImage);
+
+        } catch (IOException e) {
+            throw new RuntimeException("바이너리 변환 오류", e);
+        }
+
+        // 3. S3 업로드
+        String uploadedImageUrl = s3Uploader.upload(imageBytes, "template/subway", "png", "image/png");
+        String uploadedDataUrl = s3Uploader.upload(binaryBytes, "template/subway/binary", "bin", "application/octet-stream");
+
+        // 4. DB 저장 (DB 작업 -> 트랜잭션 -> 별도 호출)
+        return subwayTemplateService.saveToDatabase(nameKor, nameEng, lineName, uploadedImageUrl, uploadedDataUrl);
     }
 }

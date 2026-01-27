@@ -37,12 +37,12 @@ public class SubwayController {
         return ApiResponse.onSuccess(SuccessCode.OK, result);
     }
 
-    @GetMapping("/subway/{subwayTemplateId}")
+    @GetMapping("/subway/{templateId}")
     @Operation(summary = "단일 지하철 역 조회 API", description = "특정 지하철 역 정보를 반환")
     public ApiResponse<SubwayResponseDTO.SubwayDetailDto> getSubwayTemplateDetail(
-            @PathVariable Long subwayTemplateId) {
+            @PathVariable Long templateId) {
 
-        SubwayTemplate subwayTemplate = subwayService.getSubwayTemplate(subwayTemplateId);
+        SubwayTemplate subwayTemplate = subwayService.getSubwayTemplate(templateId);
 
         SubwayResponseDTO.SubwayDetailDto result = templateConverter.toSubwayDetailDto(subwayTemplate);
 

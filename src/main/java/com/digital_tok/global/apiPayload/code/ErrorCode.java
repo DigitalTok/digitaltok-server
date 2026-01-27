@@ -26,9 +26,10 @@ public enum ErrorCode implements BaseErrorCode{
     DEVICE_ALREADY_DISCONNECTED(HttpStatus.BAD_REQUEST, "DEVICE401", "기기가 연결 해제되어 있습니다."),
     // Image 관련 에러
     IMAGE_UPLOAD_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "IMAGE500_1", "이미지 업로드에 실패했습니다."), // 세미콜론(;) 주의
+    IMAGE_TO_BINARY_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "IMAGE500_2", "이미지를 바이너리 데이터로 변환시키기에 실패했습니다."),
 
     // Template 관련 에러
-    TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "SUBWAY404_1", "해당 템플릿을 찾을 수 없습니다.")
+    TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "TEMPLATE404_1", "해당 템플릿을 찾을 수 없습니다."),
     ;
     
     private final HttpStatus status;

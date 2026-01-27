@@ -1,9 +1,12 @@
 package com.digital_tok.template.service.makeSubwayImage;
 
+import com.digital_tok.global.apiPayload.code.ErrorCode;
+import com.digital_tok.global.apiPayload.exception.GeneralException;
 import com.digital_tok.image.service.processing.EinkBinaryEncoder;
 import com.digital_tok.image.service.processing.EinkEncodingOption;
 import com.digital_tok.image.service.processing.EinkQuantizer;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
@@ -11,6 +14,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SubwayTemplateUploadService { // 이미지 생성 후 S3에 업로드
@@ -31,7 +35,8 @@ public class SubwayTemplateUploadService { // 이미지 생성 후 S3에 업로�
         try {
             imageBytes = imageGenerator.generatePatternImage(nameKor, nameEng, lineName);
         } catch (IOException e) {
-            throw new RuntimeException("이미지 생성 오류", e);
+            log.error("지하철 템플릿 이미지 생성 중 오류 발생: {}", e.getMessage(), e);
+            throw new GeneralException(ErrorCode.IMAGE_UPLOAD_FAIL);
         }
 
         // 2. 바이너리 데이터 변환
@@ -49,7 +54,8 @@ public class SubwayTemplateUploadService { // 이미지 생성 후 S3에 업로�
             binaryBytes = binaryEncoder.encode(quantizedImage);
 
         } catch (IOException e) {
-            throw new RuntimeException("바이너리 변환 오류", e);
+            log.error("바이너리 데이터 변환 중 오류 발생: {}", e.getMessage(), e);
+            throw new GeneralException(ErrorCode.IMAGE_TO_BINARY_ERROR); // 또는 적절한 다른 에러코드
         }
 
         // 3. S3 업로드

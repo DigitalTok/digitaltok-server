@@ -1,6 +1,5 @@
-package com.digital_tok.template.service;
+package com.digital_tok.template.service.makeSubwayImage;
 
-import com.digital_tok.template.repository.SubwayTemplateRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

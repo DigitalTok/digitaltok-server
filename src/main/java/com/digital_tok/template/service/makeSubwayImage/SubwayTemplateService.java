@@ -1,4 +1,4 @@
-package com.digital_tok.template.service;
+package com.digital_tok.template.service.makeSubwayImage;
 
 import com.digital_tok.template.domain.SubwayTemplate;
 import com.digital_tok.template.repository.SubwayTemplateRepository;

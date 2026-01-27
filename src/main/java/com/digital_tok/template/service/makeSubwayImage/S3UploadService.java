@@ -1,4 +1,4 @@
-package com.digital_tok.template.service;
+package com.digital_tok.template.service.makeSubwayImage;
 
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import lombok.RequiredArgsConstructor;

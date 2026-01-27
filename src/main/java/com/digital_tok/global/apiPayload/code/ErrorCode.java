@@ -27,8 +27,8 @@ public enum ErrorCode implements BaseErrorCode{
     // Image 관련 에러
     IMAGE_UPLOAD_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "IMAGE500_1", "이미지 업로드에 실패했습니다."), // 세미콜론(;) 주의
 
-    // subway 관련 에러
-    STATION_NOT_FOUND(HttpStatus.NOT_FOUND, "SUBWAY404_1", "해당 지하철 역을 찾을 수 없습니다.")
+    // Template 관련 에러
+    TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "SUBWAY404_1", "해당 템플릿을 찾을 수 없습니다.")
     ;
     
     private final HttpStatus status;

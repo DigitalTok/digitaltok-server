@@ -104,40 +104,13 @@ public class ImageController {
 
     @GetMapping("/recent")
     @Operation(summary = "최근 사용한 사진 조회 API", description = "사용자가 최근에 사용한 사진 목록을 조회합니다.")
-    public ApiResponse<ImageResponseDTO.RecentImageListDto> getRecentImages() {
-
-        // TODO: 실제 DB 조회 로직으로 대체 필요
-
-        // 1. 더미 데이터 아이템 생성
-        ImageResponseDTO.RecentImageDto item1 = ImageResponseDTO.RecentImageDto.builder()
-                .imageId(301L)
-                .previewUrl("https://cdn.dirring.com/images/preview/301.png")
-                //.category("SUBWAY_PRESET")
-                .imageName("강남_2호선")
-                .isFavorite(true)
-                .lastUsedAt(LocalDateTime.of(2026, 1, 12, 12, 34, 56))
-                //.subwayTemplateId(12L)
-                .build();
-
-        ImageResponseDTO.RecentImageDto item2 = ImageResponseDTO.RecentImageDto.builder()
-                .imageId(455L)
-                .previewUrl("https://cdn.dirring.com/images/preview/455.png")
-                //.category("USER_PHOTO")
-                .imageName("IMG_8721")
-                .isFavorite(false)
-                .lastUsedAt(LocalDateTime.of(2026, 1, 11, 9, 20, 10))
-                //.subwayTemplateId(null) // null 값 처리 확인
-                .build();
-
-        List<ImageResponseDTO.RecentImageDto> items = List.of(item1, item2);
-
-        ImageResponseDTO.RecentImageListDto result = ImageResponseDTO.RecentImageListDto.builder()
-                .count(items.size())
-                .items(items)
-                .build();
-
+    public ApiResponse<ImageResponseDTO.RecentImageListDto> getRecentImages(
+            @RequestParam Long userId
+    ) {
+        ImageResponseDTO.RecentImageListDto result = imageService.getRecentImages(userId);
         return ApiResponse.onSuccess(SuccessCode.OK, result);
     }
+
 
     /**
      * 이미지 업로드 API
@@ -148,11 +121,12 @@ public class ImageController {
             @Parameter(description = "업로드할 이미지 파일", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
             @RequestPart("file") MultipartFile file,
             @Parameter(description = "이미지 이름", example = "myphoto_001")
-            @RequestParam("imageName") String imageName
+            @RequestParam("imageName") String imageName,
+            @RequestParam("userId") Long userId
+
             //@Parameter(description = "카테고리", example = "USER_PHOTO")
             //@RequestParam("category") String category
     ) {
-        Long userId = 1L; // TODO JWT 붙이면 교체
         var r = imageService.uploadImage(file, imageName, userId);
 
         ImageResponseDTO.UploadedImageDto imageDto = ImageResponseDTO.UploadedImageDto.builder()

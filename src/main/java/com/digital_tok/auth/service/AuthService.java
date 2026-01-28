@@ -124,4 +124,14 @@ public class AuthService {
         // 3-3. DB에서 해당 유저의 Refresh Token 삭제
         refreshTokenRepository.deleteByUserId(userId);
     }
+
+    /**
+     * 4. 이메일 중복 검사 (API용)
+     * 사용 가능한 이메일이면 통과, 중복이면 예외 발생
+     */
+    public void checkEmailDuplicate(String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw new GeneralException(ErrorCode.MEMBER_ALREADY_REGISTERED);
+        }
+    }
 }

@@ -43,6 +43,23 @@ spring:
   #            client-name: Kakao
   # ... ?? ?? ...
 
+  #이메일 서버 설정 (Gmail 예시)
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}  # 발송할 이메일 주소 (예: myapp@gmail.com)
+    password: ${MAIL_PASSWORD}  # 구글 앱 비밀번호 (일반 비번 X)
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
   # JWT 설정
 jwt:
   # 시스템 환경 변수 중 JWT_SECRET_KEY 값을 가져오고, 없으면 기본값(뒷부분)을 씁니다.

@@ -12,12 +12,17 @@ import com.digital_tok.user.domain.User;
 import com.digital_tok.user.domain.UserStatus;
 import com.digital_tok.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j; // 로그 확인용
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -27,6 +32,7 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final JavaMailSender javaMailSender; // 메일 전송 객체 주입
 
     /**
      * 1. 회원가입
@@ -123,5 +129,56 @@ public class AuthService {
 
         // 3-3. DB에서 해당 유저의 Refresh Token 삭제
         refreshTokenRepository.deleteByUserId(userId);
+    }
+
+    /**
+     * 4. 이메일 중복 검사 (API용)
+     * 사용 가능한 이메일이면 통과, 중복이면 예외 발생
+     */
+    public void checkEmailDuplicate(String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw new GeneralException(ErrorCode.MEMBER_ALREADY_REGISTERED);
+        }
+    }
+
+    /**
+     * [신규] 비밀번호 재설정 (임시 비밀번호 발급 및 이메일 전송)
+     */
+    @Transactional
+    public void resetPassword(AuthRequestDTO.ResetPasswordDto request) {
+        // 1. 이메일로 유저 조회
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 2. 임시 비밀번호 생성 (랜덤 UUID 10자리)
+        String tempPassword = UUID.randomUUID().toString().replace("-", "").substring(0, 10);
+
+        // 3. 비밀번호 암호화 및 DB 업데이트
+        user.encodePassword(passwordEncoder.encode(tempPassword));
+
+        // 4. 실제 이메일 전송
+        sendTempPasswordEmail(user.getEmail(), tempPassword);
+    }
+
+    /**
+     * [내부 메서드] 이메일 발송 로직
+     */
+    private void sendTempPasswordEmail(String to, String tempPassword) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setSubject("[DigitalTok] 임시 비밀번호 발급 안내");
+            message.setText("안녕하세요. DigitalTok 서비스입니다.\n\n" +
+                    "요청하신 임시 비밀번호는 아래와 같습니다.\n" +
+                    "[" + tempPassword + "]\n\n" +
+                    "로그인 후 반드시 비밀번호를 변경해 주세요.");
+
+            javaMailSender.send(message); // 전송
+            log.info("임시 비밀번호 메일 발송 성공: {}", to);
+
+        } catch (Exception e) {
+            log.error("메일 발송 실패: {}", e.getMessage());
+            throw new GeneralException(ErrorCode._INTERNAL_SERVER_ERROR); // 메일 서버 에러 처리
+        }
     }
 }

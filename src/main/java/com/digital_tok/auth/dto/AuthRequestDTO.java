@@ -1,5 +1,6 @@
 package com.digital_tok.auth.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
 public class AuthRequestDTO {
@@ -24,5 +25,16 @@ public class AuthRequestDTO {
     @Getter
     public static class LogoutDto {
         private String refreshToken; // 필수 (DB/Redis 삭제용)
+    }
+
+    // 4. 이메일 중복 확인 요청
+    @Getter
+    public static class CheckEmailDto {
+        private String email;
+    }
+
+    @Getter
+    public static class ResetPasswordDto {
+        private String email;
     }
 }

@@ -47,4 +47,14 @@ public class AuthRestController {
         authService.logout(request);
         return ApiResponse.onSuccess(SuccessCode.OK, "로그아웃에 성공했습니다.");
     }
+
+    /**
+     * 4. 이메일 중복 확인 API
+     */
+    @PostMapping("/duplicate-check")
+    @Operation(summary = "이메일 중복 확인 API", description = "이메일을 받아 중복 여부를 확인합니다. (사용 가능: 200, 중복: 409)")
+    public ApiResponse<String> checkEmail(@RequestBody AuthRequestDTO.CheckEmailDto request) {
+        authService.checkEmailDuplicate(request.getEmail());
+        return ApiResponse.onSuccess(SuccessCode.OK, "사용 가능한 이메일입니다.");
+    }
 }

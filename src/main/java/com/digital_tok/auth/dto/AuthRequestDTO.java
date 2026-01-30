@@ -25,4 +25,10 @@ public class AuthRequestDTO {
     public static class LogoutDto {
         private String refreshToken; // 필수 (DB/Redis 삭제용)
     }
+
+    // 4. 이메일 중복 확인 요청
+    @Getter
+    public static class CheckEmailDto {
+        private String email;
+    }
 }

@@ -11,9 +11,9 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @DiscriminatorValue("VULNERABLE")
 @PrimaryKeyJoinColumn(name = "template_id")
-@Table(name = "vulnerable_template")
-public class VulnerableTemplate extends Template {
+@Table(name = "priority_template")
+public class PriorityTemplate extends Template {
 
-    @Column(name = "vulnerable_type", length = 50)
-    private String vulnerableType;
+    @Column(name = "priority_type", length = 50)
+    private String priorityType;
 }

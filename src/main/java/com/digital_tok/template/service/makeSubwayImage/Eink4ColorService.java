@@ -1,4 +1,4 @@
-package com.digital_tok.template.service;
+package com.digital_tok.template.service.makeSubwayImage;
 
 import org.springframework.stereotype.Service;
 

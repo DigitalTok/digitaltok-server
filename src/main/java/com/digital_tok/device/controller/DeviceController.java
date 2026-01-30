@@ -16,8 +16,7 @@ import jakarta.validation.Valid;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/devices")
-//TODO: RequstParam으로 받을건지, PathVariable로 받아서 URL mapping 시킬건지 정해야함
-@Tag(name = "Device", description = "기기 관련 API (상태 조회, 연결, 해제 등)")
+@Tag(name = "Device", description = "기기 관련 API (상태 조회, 연결, 해제")
 public class DeviceController {
 
     private final DeviceService deviceService;
@@ -26,7 +25,7 @@ public class DeviceController {
      * 기기 연결 API
      */
     @PostMapping
-    @Operation(summary = "기기 연결 API", description = "기기를 연결합니다 (NFC UID 기반).")
+    @Operation(summary = "기기 연결 API", description = "기기를 연결합니다(NFC UID 기반).")
     public ApiResponse<DeviceResponseDTO.Result> connectDevice(
             @RequestBody @Valid DeviceRequestDTO request
     ) {
@@ -37,10 +36,10 @@ public class DeviceController {
     /**
      * 기기 연결 해제 API
      */
-    @DeleteMapping
+    @DeleteMapping("/{nfcUid}")
     @Operation(summary = "기기 연결 해제 API", description = "기기와의 연결을 해제합니다 (NFC UID 기반).")
     public ApiResponse<DeviceResponseDTO.Result> disconnectDevice(
-            @RequestParam("nfcUid") String nfcUid
+            @PathVariable String nfcUid
     ) {
         DeviceResponseDTO.Result result = deviceService.disconnectDevice(nfcUid);
         return ApiResponse.onSuccess(SuccessCode.DEVICE_DISCONNECT_SUCCESS, result);
@@ -49,10 +48,10 @@ public class DeviceController {
     /**
      * 기기 상태 조회 API
      */
-    @GetMapping
+    @GetMapping("/{nfcUid}")
     @Operation(summary = "기기 상태 조회 API", description = "기기의 연결 상태를 조회합니다 (NFC UID 기반).")
     public ApiResponse<DeviceResponseDTO.Result> getDeviceStatus(
-            @RequestParam("nfcUid") String nfcUid
+            @PathVariable String nfcUid
     ) {
         DeviceResponseDTO.Result result = deviceService.getDeviceStatus(nfcUid);
         return ApiResponse.onSuccess(SuccessCode.DEVICE_STATUS_SUCCESS, result);

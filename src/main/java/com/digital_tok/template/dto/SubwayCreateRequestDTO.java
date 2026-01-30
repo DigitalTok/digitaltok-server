@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class SubwayCreateRequest {
+public class SubwayCreateRequestDTO {
 
     @NotBlank(message = "역 이름은 필수입니다.")
     private String stationName;

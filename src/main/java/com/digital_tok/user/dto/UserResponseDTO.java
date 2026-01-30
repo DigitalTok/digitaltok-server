@@ -39,9 +39,6 @@ public class UserResponseDTO {
 
         @Schema(description = "유저 이메일", example = "example@example.com")
         private String email;
-
-        @Schema(description = "유저 핸드폰 번호", example = "010-1234-5678")
-        private String phone;
     }
 
     // 닉네임 수정 Response (변경된 프로필 정보) [삭제]

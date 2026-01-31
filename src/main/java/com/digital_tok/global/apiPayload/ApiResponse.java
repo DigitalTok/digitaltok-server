@@ -17,9 +17,11 @@ public class ApiResponse<T> {
     private final Boolean isSuccess;
 
     @JsonProperty("code")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private final String code;
 
     @JsonProperty("message")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private final String message;
 
     @JsonProperty("result")
@@ -32,5 +34,9 @@ public class ApiResponse<T> {
 
     public static <T> ApiResponse<T> onFailure(BaseErrorCode code, T result) {
         return new ApiResponse<>(false, code.getCode(), code.getMessage(), result);
+    }
+
+    public static <T> ApiResponse<T> onSuccessResultOnly(T result){
+        return new ApiResponse<>(true, null, null, result);
     }
 }

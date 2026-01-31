@@ -9,8 +9,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
+import java.util.List;
+import com.digital_tok.image.dto.ImageResponseDTO;
 import java.time.LocalDateTime;
+import org.springframework.data.domain.PageRequest;
+
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +40,7 @@ public class ImageService {
         }
 
         // 1) S3 업로드 (원본)
-        // ⚠️ 가능하면 s3Manager도 bytes 업로드 버전이 있으면 그걸 쓰는 게 제일 좋음
+        // 가능하면 s3Manager도 bytes 업로드 버전이 있으면 그걸 쓰는 게 제일 좋음
         String originalUrl = s3Manager.uploadFile("images", file);
 
         // 2) e-ink 파생 생성
@@ -70,7 +73,7 @@ public class ImageService {
                 .image(image)
                 .isFavorite(false)
                 .savedAt(now)
-                .lastUsedAt(null)
+                .lastUsedAt(now)
                 .build();
 
         imageMappingRepository.save(mapping);
@@ -127,9 +130,60 @@ public class ImageService {
         return br;
 
     }
+    @Transactional(readOnly = true)
+    public ImageResponseDTO.RecentImageListDto getRecentImages(Long userId) {
+
+        List<ImageMapping> mappings = imageMappingRepository
+                .findByUserIdAndLastUsedAtIsNotNullAndImage_DeletedAtIsNullOrderByLastUsedAtDesc(
+                        userId,
+                        org.springframework.data.domain.PageRequest.of(0, 14)
+                )
+                .getContent();
+
+        List<ImageResponseDTO.RecentImageDto> items = mappings.stream()
+                .map(m -> ImageResponseDTO.RecentImageDto.builder()
+                        .imageId(m.getImage().getImageId())
+                        .previewUrl(m.getImage().getPreviewUrl())
+                        .imageName(m.getImage().getImageName())
+                        .isFavorite(m.getIsFavorite())
+                        .lastUsedAt(m.getLastUsedAt())
+                        .build())
+                .toList();
+
+        return ImageResponseDTO.RecentImageListDto.builder()
+                .count(items.size())
+                .items(items)
+                .build();
+    }
+    @Transactional
+    public ImageResponseDTO.FavoriteResultDto updateFavorite(Long userId, Long imageId, Boolean isFavorite) {
+
+        if (isFavorite == null) {
+            throw new IllegalArgumentException("isFavorite is required");
+        }
+
+        ImageMapping mapping = imageMappingRepository.findByUserIdAndImage_ImageId(userId, imageId)
+                .orElseThrow(() -> new IllegalArgumentException("image mapping not found. userId=" + userId + ", imageId=" + imageId));
+
+        // 즐겨찾기 값 변경
+        // (setter 없으니 ImageMapping에 update 메서드 하나 추가하는 게 깔끔)
+        mapping.updateFavorite(isFavorite);
+
+        // JPA dirty checking으로 저장되지만, 명시적으로 save 해도 OK
+        imageMappingRepository.save(mapping);
+
+        return ImageResponseDTO.FavoriteResultDto.builder()
+                .userId(userId)
+                .imageId(imageId)
+                .isFavorite(mapping.getIsFavorite())
+                .updatedAt(LocalDateTime.now())
+                .build();
+    }
+
 
     // 반환용 record
     public record UploadResult(Image image, ImageMapping mapping) {}
     public record PreviewResult(Long imageId, String previewUrl, LocalDateTime updatedAt) {}
     public record BinaryResult(Long imageId, String einkDataUrl, LocalDateTime lastUsedAt) {}
 }
+

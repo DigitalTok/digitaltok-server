@@ -104,40 +104,13 @@ public class ImageController {
 
     @GetMapping("/recent")
     @Operation(summary = "최근 사용한 사진 조회 API", description = "사용자가 최근에 사용한 사진 목록을 조회합니다.")
-    public ApiResponse<ImageResponseDTO.RecentImageListDto> getRecentImages() {
-
-        // TODO: 실제 DB 조회 로직으로 대체 필요
-
-        // 1. 더미 데이터 아이템 생성
-        ImageResponseDTO.RecentImageDto item1 = ImageResponseDTO.RecentImageDto.builder()
-                .imageId(301L)
-                .previewUrl("https://cdn.dirring.com/images/preview/301.png")
-                //.category("SUBWAY_PRESET")
-                .imageName("강남_2호선")
-                .isFavorite(true)
-                .lastUsedAt(LocalDateTime.of(2026, 1, 12, 12, 34, 56))
-                //.subwayTemplateId(12L)
-                .build();
-
-        ImageResponseDTO.RecentImageDto item2 = ImageResponseDTO.RecentImageDto.builder()
-                .imageId(455L)
-                .previewUrl("https://cdn.dirring.com/images/preview/455.png")
-                //.category("USER_PHOTO")
-                .imageName("IMG_8721")
-                .isFavorite(false)
-                .lastUsedAt(LocalDateTime.of(2026, 1, 11, 9, 20, 10))
-                //.subwayTemplateId(null) // null 값 처리 확인
-                .build();
-
-        List<ImageResponseDTO.RecentImageDto> items = List.of(item1, item2);
-
-        ImageResponseDTO.RecentImageListDto result = ImageResponseDTO.RecentImageListDto.builder()
-                .count(items.size())
-                .items(items)
-                .build();
-
+    public ApiResponse<ImageResponseDTO.RecentImageListDto> getRecentImages(
+            @RequestParam Long userId
+    ) {
+        ImageResponseDTO.RecentImageListDto result = imageService.getRecentImages(userId);
         return ApiResponse.onSuccess(SuccessCode.OK, result);
     }
+
 
     /**
      * 이미지 업로드 API
@@ -148,11 +121,12 @@ public class ImageController {
             @Parameter(description = "업로드할 이미지 파일", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
             @RequestPart("file") MultipartFile file,
             @Parameter(description = "이미지 이름", example = "myphoto_001")
-            @RequestParam("imageName") String imageName
+            @RequestParam("imageName") String imageName,
+            @RequestParam("userId") Long userId
+
             //@Parameter(description = "카테고리", example = "USER_PHOTO")
             //@RequestParam("category") String category
     ) {
-        Long userId = 1L; // TODO JWT 붙이면 교체
         var r = imageService.uploadImage(file, imageName, userId);
 
         ImageResponseDTO.UploadedImageDto imageDto = ImageResponseDTO.UploadedImageDto.builder()
@@ -219,12 +193,25 @@ public class ImageController {
         System.out.println("### HIT /binary imageId=" + imageId);
         Long userId = 1L;//더미 데이터-- 추후 jwt추출로 변경
         var r = imageService.getBinary(userId, imageId);
+
+        ImageResponseDTO.BinaryResultDto.MetaDto meta =
+                ImageResponseDTO.BinaryResultDto.MetaDto.builder()
+                        .width(200)
+                        .height(200)
+                        .bpp(2)
+                        .palette("Black=0, White=1, Yellow=2, Red=3")
+                        .packing("MSB-first")
+                        .scan("row-major")
+                        .payloadBytes(10000)
+                        .hasHeader(false)
+                        .build();
         System.out.println("### Controller r.einkDataUrl=" + r.einkDataUrl());
 
         ImageResponseDTO.BinaryResultDto result = ImageResponseDTO.BinaryResultDto.builder()
                 .imageId(r.imageId())
                 .einkDataUrl(r.einkDataUrl())
                 .lastUsedAt(r.lastUsedAt())
+                .meta(meta)
                 .build();
         System.out.println("### DTO result.einkDataUrl=" + result.getEinkDataUrl());
 
@@ -235,7 +222,7 @@ public class ImageController {
         System.out.println("### CONTROLLER r.eink=" + r.einkDataUrl());
 
 
-        return ApiResponse.onSuccess(SuccessCode.OK, result);
+        return ApiResponse.onSuccessResultOnly(result);
     }
 
 
@@ -246,19 +233,11 @@ public class ImageController {
     @Operation(summary = "이미지 즐겨찾기 등록/해제 API", description = "이미지의 즐겨찾기 상태를 변경합니다.")
     public ApiResponse<ImageResponseDTO.FavoriteResultDto> toggleFavorite(
             @PathVariable Long imageId,
+            @RequestParam Long userId,
             @RequestBody ImageRequestDTO.FavoriteDto request
     ) {
 
-        // TODO: 실제 DB 업데이트 로직 구현 (isFavorite 값에 따라 등록/해제 처리)
-
-        // 더미 데이터 생성
-        ImageResponseDTO.FavoriteResultDto result = ImageResponseDTO.FavoriteResultDto.builder()
-                .imageId(imageId)
-                .isFavorite(request.getIsFavorite()) // 요청받은 값을 그대로 반환 (잘 반영됐는지 확인용)
-                .favoriteCount(request.getIsFavorite() ? 2 : 1) // 즐겨찾기 등록하면 1 증가된 값 나오게함.
-                .updatedAt(LocalDateTime.of(2026, 1, 12, 22, 20, 10))
-                .build();
-
+        var result = imageService.updateFavorite(userId, imageId, request.getIsFavorite());
         return ApiResponse.onSuccess(SuccessCode.OK, result);
     }
 }

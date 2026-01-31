@@ -62,6 +62,7 @@ public class AuthRestController {
      *  5. 비밀번호 재설정
      */
     @PostMapping("/password/reset")
+    @Operation(summary = "비밀번호 재설정", description = "비밀번호를 랜덤한 숫자로 재설정합니다.")
     public ApiResponse<String> resetPassword(@RequestBody AuthRequestDTO.ResetPasswordDto request) {
         authService.resetPassword(request);
         return ApiResponse.onSuccess(SuccessCode.OK, "임시 비밀번호가 이메일로 전송되었습니다.");

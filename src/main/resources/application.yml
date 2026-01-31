@@ -47,8 +47,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${MAIL_USERNAME}  # 발송할 이메일 주소 (예: myapp@gmail.com)
-    password: ${MAIL_PASSWORD}  # 구글 앱 비밀번호 (일반 비번 X)
+    username: ${MAIL_USERNAME}  # 발송할 이메일 주소
+    password: ${MAIL_PASSWORD}  # 구글 앱 비밀번호
     properties:
       mail:
         smtp:

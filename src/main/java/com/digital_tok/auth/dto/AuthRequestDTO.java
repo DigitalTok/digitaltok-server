@@ -1,5 +1,6 @@
 package com.digital_tok.auth.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
 public class AuthRequestDTO {
@@ -29,6 +30,12 @@ public class AuthRequestDTO {
     // 4. 이메일 중복 확인 요청
     @Getter
     public static class CheckEmailDto {
+        private String email;
+    }
+
+    // 5. 비밀번호 재설정
+    @Getter
+    public static class ResetPasswordDto {
         private String email;
     }
 }

@@ -3,6 +3,7 @@ package com.digital_tok.device.domain;
 import com.digital_tok.user.domain.TestUser;
 import com.digital_tok.global.apiPayload.exception.GeneralException;
 import com.digital_tok.global.apiPayload.code.ErrorCode;
+import com.digital_tok.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -30,8 +31,8 @@ public class Device {
     private DeviceStatus status; // ACTIVE / INACTIVE
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id") // 일대일 매핑
-    private TestUser user; // 연결된 사용자
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = true) // 외래 키 수정
+    private User user;
 
     @Column(name = "registered_at")
     private LocalDateTime registeredAt;
@@ -51,7 +52,7 @@ public class Device {
     /**
      * 기기 연결 (사용자 추가)
      */
-    public void connect(TestUser user) {
+    public void connect(User user) { // TestUser -> User 사용
         if (this.status == DeviceStatus.ACTIVE) {
             throw new GeneralException(ErrorCode.DEVICE_ALREADY_CONNECTED);
         }

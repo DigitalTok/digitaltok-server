@@ -33,6 +33,7 @@ public class AuthRequestDTO {
         private String email;
     }
 
+    // 5. 비밀번호 재설정
     @Getter
     public static class ResetPasswordDto {
         private String email;

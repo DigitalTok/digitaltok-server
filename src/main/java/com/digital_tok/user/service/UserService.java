@@ -110,7 +110,6 @@ public class UserService {
                 //.name(user.getName())
                 .nickname(user.getNickname())
                 .email(user.getEmail())
-                .phone(user.getPhone())
                 .build();
     }
 }

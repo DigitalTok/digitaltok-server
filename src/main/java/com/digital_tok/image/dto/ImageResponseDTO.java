@@ -157,6 +157,25 @@ public class ImageResponseDTO {
 
         @Schema(description = "마지막 사용 일시", example = "2026-01-12T22:10:20")
         private LocalDateTime lastUsedAt;
+
+        @Schema(description = "메타데이터", example = "meta{...}")
+        private MetaDto meta;
+
+        @Getter
+        @Builder
+        @AllArgsConstructor
+        @NoArgsConstructor
+        public static class MetaDto {
+            private Integer width;
+            private Integer height;
+            private Integer bpp;
+            private String palette;
+            private String packing;
+            private String scan;
+            private Integer payloadBytes;
+            private Boolean hasHeader;
+        }
+
     }
 
     // ImageResponseDTO.java 내부에 추가
@@ -169,6 +188,9 @@ public class ImageResponseDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class FavoriteResultDto {
+        @Schema(description = "유저 ID", example = "10")
+        private Long userId;
+
         @Schema(description = "이미지 ID", example = "55")
         private Long imageId;
 

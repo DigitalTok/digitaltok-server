@@ -142,7 +142,7 @@ public class AuthService {
     }
 
     /**
-     * [신규] 비밀번호 재설정 (임시 비밀번호 발급 및 이메일 전송)
+     * 비밀번호 재설정 (임시 비밀번호 발급 및 이메일 전송)
      */
     @Transactional
     public void resetPassword(AuthRequestDTO.ResetPasswordDto request) {

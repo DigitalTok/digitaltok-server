@@ -24,7 +24,7 @@ public class SubwayService { // 지하철 관련 API 호출 서비스
 
     public SubwayTemplate getSubwayTemplate(Long templateId) {
         return subwayTemplateRepository.findById(templateId)
-                .orElseThrow(() -> new GeneralException(ErrorCode.STATION_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(ErrorCode.TEMPLATE_NOT_FOUND));
     }
 
     // 지하철 역 검색 서비스

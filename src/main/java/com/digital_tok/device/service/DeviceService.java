@@ -1,5 +1,6 @@
 package com.digital_tok.device.service;
 
+import com.digital_tok.device.converter.DeviceConverter;
 import com.digital_tok.device.domain.Device;
 import com.digital_tok.device.dto.DeviceRequestDTO;
 import com.digital_tok.device.dto.DeviceResponseDTO;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 @Transactional
 public class DeviceService {
 
+    private final DeviceConverter deviceConverter;
     private final DeviceRepository deviceRepository;
     private final UserRepository userRepository;
 
@@ -48,7 +50,7 @@ public class DeviceService {
 
         log.info("User {} successfully connected Device {}", currentUser.getId(), device.getId());
 
-        return mapToDeviceResponse(device);
+        return deviceConverter.toResult(device);
     }
 
     /**
@@ -75,7 +77,7 @@ public class DeviceService {
 
         log.info("User {} successfully disconnected Device {}", currentUser.getId(), device.getId());
 
-        return mapToDeviceResponse(device);
+        return deviceConverter.toResult(device);
     }
 
     /**
@@ -95,7 +97,7 @@ public class DeviceService {
         }
 
         // 기기 상태 반환
-        return mapToDeviceResponse(device);
+        return deviceConverter.toResult(device);
     }
 
     // ============================
@@ -139,15 +141,4 @@ public class DeviceService {
             .orElseThrow(() -> new GeneralException(ErrorCode.DEVICE_NOT_FOUND));
     }
 
-    /**
-     * Device 엔티티를 DTO로 매핑
-     */
-    private DeviceResponseDTO.Result mapToDeviceResponse(Device device) {
-        return DeviceResponseDTO.Result.builder()
-            .deviceId(device.getId())
-            .status(device.getStatus().name())
-            .registeredAt(device.getRegisteredAt())
-            .unregisteredAt(device.getUnregisteredAt())
-            .build();
-    }
 }

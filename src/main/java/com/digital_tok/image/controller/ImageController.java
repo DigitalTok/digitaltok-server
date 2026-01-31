@@ -193,12 +193,25 @@ public class ImageController {
         System.out.println("### HIT /binary imageId=" + imageId);
         Long userId = 1L;//더미 데이터-- 추후 jwt추출로 변경
         var r = imageService.getBinary(userId, imageId);
+
+        ImageResponseDTO.BinaryResultDto.MetaDto meta =
+                ImageResponseDTO.BinaryResultDto.MetaDto.builder()
+                        .width(200)
+                        .height(200)
+                        .bpp(2)
+                        .palette("Black=0, White=1, Yellow=2, Red=3")
+                        .packing("MSB-first")
+                        .scan("row-major")
+                        .payloadBytes(10000)
+                        .hasHeader(false)
+                        .build();
         System.out.println("### Controller r.einkDataUrl=" + r.einkDataUrl());
 
         ImageResponseDTO.BinaryResultDto result = ImageResponseDTO.BinaryResultDto.builder()
                 .imageId(r.imageId())
                 .einkDataUrl(r.einkDataUrl())
                 .lastUsedAt(r.lastUsedAt())
+                .meta(meta)
                 .build();
         System.out.println("### DTO result.einkDataUrl=" + result.getEinkDataUrl());
 
@@ -209,7 +222,7 @@ public class ImageController {
         System.out.println("### CONTROLLER r.eink=" + r.einkDataUrl());
 
 
-        return ApiResponse.onSuccess(SuccessCode.OK, result);
+        return ApiResponse.onSuccessResultOnly(result);
     }
 
 

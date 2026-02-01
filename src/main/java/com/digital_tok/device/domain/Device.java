@@ -12,8 +12,6 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED) // JPA 필수 기본 생성자
-@AllArgsConstructor
-@Builder
 @Table(name = "device")
 public class Device {
 
@@ -49,13 +47,12 @@ public class Device {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+
     /**
-     * 기기 연결 (사용자 추가)
+     * 기기 연결
      */
-    public void connect(User user) { // TestUser -> User 사용
-        if (this.status == DeviceStatus.ACTIVE) {
-            throw new GeneralException(ErrorCode.DEVICE_ALREADY_CONNECTED);
-        }
+    public void connect(User user) {
+        validateConnectable();
         this.user = user;
         this.status = DeviceStatus.ACTIVE;
         this.registeredAt = LocalDateTime.now();
@@ -63,17 +60,37 @@ public class Device {
     }
 
     /**
-     * 기기 연결 해제 (사용자 제거)
+     * 기기 연결 해제 (소유자만 가능)
      */
-    public void disconnect() {
-        if (this.status == DeviceStatus.INACTIVE) {
-            throw new GeneralException(ErrorCode.DEVICE_ALREADY_DISCONNECTED);
-        }
-        this.user = null; // 사용자 연결 해제
+    public void disconnect(User user) {
+        validateOwner(user);
+        validateDisconnectable();
+        this.user = null;
         this.status = DeviceStatus.INACTIVE;
         this.unregisteredAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
 
+    /* =======================
+       검증 로직
+       ======================= */
+
+    private void validateConnectable() {
+        if (this.status == DeviceStatus.ACTIVE) {
+            throw new GeneralException(ErrorCode.DEVICE_ALREADY_CONNECTED);
+        }
+    }
+
+    private void validateDisconnectable() {
+        if (this.status == DeviceStatus.INACTIVE) {
+            throw new GeneralException(ErrorCode.DEVICE_ALREADY_DISCONNECTED);
+        }
+    }
+
+    private void validateOwner(User user) {
+        if (this.user == null || !this.user.getId().equals(user.getId())) {
+            throw new GeneralException(ErrorCode.DEVICE_NOT_FOUND);
+        }
+    }
    
 }

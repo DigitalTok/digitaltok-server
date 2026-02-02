@@ -11,10 +11,12 @@ import com.digital_tok.user.domain.Role;
 import com.digital_tok.user.domain.User;
 import com.digital_tok.user.domain.UserStatus;
 import com.digital_tok.user.repository.UserRepository;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j; // 로그 확인용
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -165,20 +167,27 @@ public class AuthService {
      */
     private void sendTempPasswordEmail(String to, String tempPassword) {
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(to);
-            message.setSubject("[DigitalTok] 임시 비밀번호 발급 안내");
-            message.setText("안녕하세요. DigitalTok 서비스입니다.\n\n" +
+            // SimpleMailMessage 대신 MimeMessage 사용
+            MimeMessage message = javaMailSender.createMimeMessage();
+
+            // 두 번째 인자 true: 멀티파트 허용, 세 번째 인자 "UTF-8": 인코딩 설정
+            MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
+
+            helper.setTo(to.trim()); // 공백 제거 (trim)
+            helper.setSubject("[DigitalTok] 임시 비밀번호 발급 안내");
+            helper.setText("안녕하세요. DigitalTok 서비스입니다.\n\n" +
                     "요청하신 임시 비밀번호는 아래와 같습니다.\n" +
                     "[" + tempPassword + "]\n\n" +
                     "로그인 후 반드시 비밀번호를 변경해 주세요.");
+            // 만약 발신자(From) 설정이 필요하다면:
+            helper.setFrom("diring.official@gmail.com");
 
-            javaMailSender.send(message); // 전송
+            javaMailSender.send(message);
             log.info("임시 비밀번호 메일 발송 성공: {}", to);
 
         } catch (Exception e) {
             log.error("메일 발송 실패: {}", e.getMessage());
-            throw new GeneralException(ErrorCode._INTERNAL_SERVER_ERROR); // 메일 서버 에러 처리
+            throw new GeneralException(ErrorCode._INTERNAL_SERVER_ERROR);
         }
     }
 }

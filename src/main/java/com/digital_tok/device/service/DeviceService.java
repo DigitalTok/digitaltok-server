@@ -65,15 +65,18 @@ public class DeviceService {
         return deviceConverter.toResult(device);
     }
 
-    // ============================
-    // Private Helper Methods
-    // ============================
+    /**
+     * NFC 고유 Id로 기기 조회
+     */
 
     private Device findDevice(String nfcUid) {
         return deviceRepository.findByNfcUid(nfcUid)
                 .orElseThrow(() -> new GeneralException(ErrorCode.DEVICE_NOT_FOUND));
     }
 
+    /**
+     * 현재 인증된 사용자 조회
+     */
     private User getCurrentUser() {
         String email = SecurityContextHolder.getContext()
                 .getAuthentication()

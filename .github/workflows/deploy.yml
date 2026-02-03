@@ -82,6 +82,10 @@ jobs:
           export AWS_SECRET_KEY='${{ secrets.AWS_SECRET_KEY }}'
           export SPRING_CLOUD_AWS_REGION_STATIC=ap-northeast-2
           
+          # 이메일 환경변수 설정
+          export MAIL_USERNAME='${{ secrets.MAIL_USERNAME }}'
+          export MAIL_PASSWORD='${{ secrets.MAIL_PASSWORD }}'
+          
           # 서버 실행 명령어
           # -Djwt.secret 옵션으로 스프링이 찾는 이름에 맞춰서 값을 직접 넣어줌
           nohup java -Duser.timezone=Asia/Seoul \

@@ -11,6 +11,7 @@ import com.digital_tok.user.domain.Role;
 import com.digital_tok.user.domain.User;
 import com.digital_tok.user.domain.UserStatus;
 import com.digital_tok.user.repository.UserRepository;
+import com.digital_tok.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j; // 로그 확인용
 import org.springframework.mail.SimpleMailMessage;
@@ -33,6 +34,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final JavaMailSender javaMailSender; // 메일 전송 객체 주입
+    private final UserService userService;
 
     /**
      * 1. 회원가입
@@ -144,20 +146,15 @@ public class AuthService {
     /**
      * 비밀번호 재설정 (임시 비밀번호 발급 및 이메일 전송)
      */
-    @Transactional
     public void resetPassword(AuthRequestDTO.ResetPasswordDto request) {
-        // 1. 이메일로 유저 조회
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
-
-        // 2. 임시 비밀번호 생성 (랜덤 UUID 10자리)
+        // 1. 임시 비밀번호 생성 (랜덤 UUID 10자리) - 순수 Java 로직
         String tempPassword = UUID.randomUUID().toString().replace("-", "").substring(0, 10);
 
-        // 3. 비밀번호 암호화 및 DB 업데이트
-        user.encodePassword(passwordEncoder.encode(tempPassword));
+        // 2. DB 업데이트 (UserService로 위임)
+        userService.updatePasswordForce(request.getEmail(), tempPassword);
 
-        // 4. 실제 이메일 전송
-        sendTempPasswordEmail(user.getEmail(), tempPassword);
+        // 3. 실제 이메일 전송 (외부 네트워크 작업)
+        sendTempPasswordEmail(request.getEmail(), tempPassword);
     }
 
     /**

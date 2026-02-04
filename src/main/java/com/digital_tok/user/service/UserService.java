@@ -112,4 +112,16 @@ public class UserService {
                 .email(user.getEmail())
                 .build();
     }
+
+    /**
+     * 비밀번호 변경 (AuthService 위임용)
+     */
+    @Transactional
+    public void updatePasswordForce(String email, String tempPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 비밀번호 암호화 및 변경 (Dirty Checking으로 자동 저장)
+        user.encodePassword(passwordEncoder.encode(tempPassword));
+    }
 }

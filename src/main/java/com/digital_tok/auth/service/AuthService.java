@@ -84,17 +84,23 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // 2-2. 비밀번호 검증
+        // 2-2. 탈퇴(INACTIVE) 또는 정지(BLOCKED)된 유저인지 확인
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            // 적절한 에러 코드(예: MEMBER_NOT_FOUND 또는 커스텀 에러)를 던짐
+            throw new GeneralException(ErrorCode.MEMBER_NOT_FOUND);
+        }
+
+        // 2-3. 비밀번호 검증
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             // 보안상 "비밀번호가 틀렸습니다"보다는 "정보가 일치하지 않습니다"가 좋으나, 편의상 명확한 에러 사용 가능
             throw new GeneralException(ErrorCode.BAD_REQUEST);
         }
 
-        // 2-3. 토큰 생성 (Access + Refresh)
+        // 2-4. 토큰 생성 (Access + Refresh)
         String accessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getEmail(), user.getRole());
         String refreshToken = jwtTokenProvider.createRefreshToken(user.getId());
 
-        // 2-4. Refresh Token DB 저장 (기존 토큰이 있으면 업데이트, 없으면 생성)
+        // 2-5. Refresh Token DB 저장 (기존 토큰이 있으면 업데이트, 없으면 생성)
         RefreshToken rt = refreshTokenRepository.findByUserId(user.getId())
                 .orElseGet(() -> RefreshToken.builder()
                         .user(user)
@@ -104,7 +110,7 @@ public class AuthService {
         rt.updateToken(refreshToken); // 더티 체킹으로 업데이트 or 새로 생성된 객체면 값 설정
         refreshTokenRepository.save(rt);
 
-        // 2-5. 응답 DTO 반환
+        // 2-6. 응답 DTO 반환
         return AuthResponseDTO.LoginResultDto.builder()
                 .grantType("Bearer")
                 .accessToken(accessToken)

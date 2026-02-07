@@ -9,6 +9,7 @@ import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 @Service
 public class Eink4ColorService {
@@ -68,7 +69,24 @@ public class Eink4ColorService {
 
         // 8. 한글 역명 그리기
         g2d.setColor(C_BLACK); // 글씨는 검정색
-        g2d.setFont(new Font("Malgun Gothic", Font.BOLD, 34));
+        try {
+            // 리소스 폴더에서 폰트 파일 스트림 읽기 (경로 주의: /fonts/파일이름.ttf)
+            InputStream fontStream = getClass().getResourceAsStream("/fonts/Pretendard-Bold.otf");
+
+            Font korFont;
+            if (fontStream != null) {
+                // 1. 폰트 생성 (TRUETYPE_FONT)
+                korFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 35f);
+            } else {
+                // 파일 로드 실패 시
+                korFont = new Font("SansSerif", Font.BOLD, 35);
+            }
+            g2d.setFont(korFont);
+
+        } catch (FontFormatException e) {
+            // 폰트 형식이 잘못되었을 경우 안전장치
+            g2d.setFont(new Font("SansSerif", Font.BOLD, 35));
+        }
         int korY = circleY + CIRCLE_DIAMETER + 45; // 동그라미 아래로 50px 띄움
         drawCenteredText(g2d, nameKor, centerX, korY);
 

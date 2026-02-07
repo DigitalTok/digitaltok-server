@@ -38,7 +38,7 @@ public class Device {
     @Column(name = "unregistered_at")
     private LocalDateTime unregisteredAt; // 기기 연결 해제 일시
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
     private LocalDateTime createdAt; //기기 등록 일시
 
     @Column(name = "updated_at")

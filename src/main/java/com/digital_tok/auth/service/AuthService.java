@@ -19,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.UUID;
 
 
@@ -39,9 +40,30 @@ public class AuthService {
      */
     @Transactional
     public AuthResponseDTO.JoinResultDto join(AuthRequestDTO.JoinDto request) {
-        // 1-1. 이메일 중복 검사
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new GeneralException(ErrorCode.MEMBER_ALREADY_REGISTERED);
+        // 1-1. 이메일로 유저 조회 (existsByEmail 대신 findByEmail 사용)
+        Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
+
+        if (existingUser.isPresent()) {
+            User user = existingUser.get();
+
+            // 활동 중인 유저면 -> "이미 가입된 유저" 에러
+            if (user.getStatus() == UserStatus.ACTIVE) {
+                throw new GeneralException(ErrorCode.MEMBER_ALREADY_REGISTERED);
+            }
+
+            // 탈퇴한(INACTIVE) 유저면 -> "재가입(복구) 진행"
+            // 닉네임 생성 등 필요한 로직 수행
+            String randomNickname = "User_" + UUID.randomUUID().toString().substring(0, 8);
+
+            // User 엔티티의 reactivate 메서드 호출 (비밀번호 암호화 필수!)
+            user.reactivate(passwordEncoder.encode(request.getPassword()), randomNickname);
+
+            // 기존 객체를 반환 (save 불필요, Dirty Checking으로 자동 업데이트)
+            return AuthResponseDTO.JoinResultDto.builder()
+                    .userId(user.getId())
+                    .email(user.getEmail())
+                    .nickname(user.getNickname())
+                    .build();
         }
 
         // 1-2. 닉네임 랜덤 생성 (예: User_a1b2c3d4)
@@ -84,17 +106,23 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new GeneralException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // 2-2. 비밀번호 검증
+        // 2-2. 탈퇴(INACTIVE) 또는 정지(BLOCKED)된 유저인지 확인
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            // 적절한 에러 코드(예: MEMBER_NOT_FOUND 또는 커스텀 에러)를 던짐
+            throw new GeneralException(ErrorCode.MEMBER_NOT_FOUND);
+        }
+
+        // 2-3. 비밀번호 검증
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             // 보안상 "비밀번호가 틀렸습니다"보다는 "정보가 일치하지 않습니다"가 좋으나, 편의상 명확한 에러 사용 가능
             throw new GeneralException(ErrorCode.BAD_REQUEST);
         }
 
-        // 2-3. 토큰 생성 (Access + Refresh)
+        // 2-4. 토큰 생성 (Access + Refresh)
         String accessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getEmail(), user.getRole());
         String refreshToken = jwtTokenProvider.createRefreshToken(user.getId());
 
-        // 2-4. Refresh Token DB 저장 (기존 토큰이 있으면 업데이트, 없으면 생성)
+        // 2-5. Refresh Token DB 저장 (기존 토큰이 있으면 업데이트, 없으면 생성)
         RefreshToken rt = refreshTokenRepository.findByUserId(user.getId())
                 .orElseGet(() -> RefreshToken.builder()
                         .user(user)
@@ -104,7 +132,7 @@ public class AuthService {
         rt.updateToken(refreshToken); // 더티 체킹으로 업데이트 or 새로 생성된 객체면 값 설정
         refreshTokenRepository.save(rt);
 
-        // 2-5. 응답 DTO 반환
+        // 2-6. 응답 DTO 반환
         return AuthResponseDTO.LoginResultDto.builder()
                 .grantType("Bearer")
                 .accessToken(accessToken)

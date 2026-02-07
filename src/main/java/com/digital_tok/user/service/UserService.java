@@ -1,5 +1,6 @@
 package com.digital_tok.user.service;
 
+import com.digital_tok.auth.repository.RefreshTokenRepository;
 import com.digital_tok.global.apiPayload.code.ErrorCode;
 import com.digital_tok.global.apiPayload.exception.GeneralException;
 import com.digital_tok.user.domain.User;
@@ -18,22 +19,21 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     /**
      * 1. 회원 탈퇴
-     * 설명: 비밀번호 확인 후 상태를 INACTIVE로 변경 (Soft Delete)
+     * 설명: 상태를 INACTIVE로 변경 (Soft Delete)
      */
     @Transactional
-    public void withdraw(Long userId, UserRequestDTO.WithdrawDto request) {
+    public void withdraw(Long userId) {
         User user = getUserById(userId);
-
-        // 비밀번호 검증
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new GeneralException(ErrorCode.BAD_REQUEST); // 비밀번호 불일치
-        }
 
         // 회원 탈퇴 처리 (Soft Delete)
         user.withdraw();
+
+        // Refresh Token 삭제 (재로그인 방지)
+        refreshTokenRepository.deleteByUserId(userId);
     }
 
     /**

@@ -13,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import com.digital_tok.user.domain.UserStatus;
 
 import java.io.IOException;
 
@@ -39,7 +40,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 User user = userRepository.findById(userId).orElse(null);
 
-                if (user != null) {
+
+
+                // 유저가 존재하고, 상태가 ACTIVE(활동 중)인 경우에만 인증 처리
+                if (user != null && user.getStatus() == UserStatus.ACTIVE) {
                     PrincipalDetails principalDetails = new PrincipalDetails(user);
                     Authentication authentication = new UsernamePasswordAuthenticationToken(
                             principalDetails,
@@ -47,6 +51,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             principalDetails.getAuthorities()
                     );
                     SecurityContextHolder.getContext().setAuthentication(authentication);
+                } else if (user != null && user.getStatus() != UserStatus.ACTIVE) {
+                    log.warn("탈퇴하거나 정지된 계정의 접근 시도입니다. userId: {}", userId);
+                    // 여기서 바로 에러 응답을 보내거나, SecurityContext를 비워두어 뒤쪽 필터에서 401/403이 뜸
                 }
             }
         } catch (Exception e) {

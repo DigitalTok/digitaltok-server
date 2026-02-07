@@ -29,10 +29,9 @@ public class UserRestController {
      */
     @DeleteMapping("/me")
     @Operation(summary = "회원 탈퇴 API", description = "비밀번호 검증 후 회원 정보를 삭제(또는 비활성화)합니다.")
-    public ApiResponse<String> withdraw(@AuthenticationPrincipal PrincipalDetails principal,
-                                        @RequestBody UserRequestDTO.WithdrawDto request) {
+    public ApiResponse<String> withdraw(@AuthenticationPrincipal PrincipalDetails principal) {
         // principal.getUserId()로 실제 토큰의 주인 ID를 가져옴
-        userService.withdraw(principal.getUserId(), request);
+        userService.withdraw(principal.getUserId());
         return ApiResponse.onSuccess(SuccessCode.OK, "회원 탈퇴가 완료되었습니다.");
     }
 

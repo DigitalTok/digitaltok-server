@@ -19,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.UUID;
 
 
@@ -39,9 +40,30 @@ public class AuthService {
      */
     @Transactional
     public AuthResponseDTO.JoinResultDto join(AuthRequestDTO.JoinDto request) {
-        // 1-1. 이메일 중복 검사
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new GeneralException(ErrorCode.MEMBER_ALREADY_REGISTERED);
+        // 1-1. 이메일로 유저 조회 (existsByEmail 대신 findByEmail 사용)
+        Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
+
+        if (existingUser.isPresent()) {
+            User user = existingUser.get();
+
+            // 활동 중인 유저면 -> "이미 가입된 유저" 에러
+            if (user.getStatus() == UserStatus.ACTIVE) {
+                throw new GeneralException(ErrorCode.MEMBER_ALREADY_REGISTERED);
+            }
+
+            // 탈퇴한(INACTIVE) 유저면 -> "재가입(복구) 진행"
+            // 닉네임 생성 등 필요한 로직 수행
+            String randomNickname = "User_" + UUID.randomUUID().toString().substring(0, 8);
+
+            // User 엔티티의 reactivate 메서드 호출 (비밀번호 암호화 필수!)
+            user.reactivate(passwordEncoder.encode(request.getPassword()), randomNickname);
+
+            // 기존 객체를 반환 (save 불필요, Dirty Checking으로 자동 업데이트)
+            return AuthResponseDTO.JoinResultDto.builder()
+                    .userId(user.getId())
+                    .email(user.getEmail())
+                    .nickname(user.getNickname())
+                    .build();
         }
 
         // 1-2. 닉네임 랜덤 생성 (예: User_a1b2c3d4)

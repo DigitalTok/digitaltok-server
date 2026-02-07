@@ -69,4 +69,11 @@ public class User extends BaseEntity {
     // 이메일 변경
     public void updateEmail(String email) {
         this.email = email;}
+
+    // 재가입(계정 활성화) 메서드
+    public void reactivate(String password, String nickname) {
+        this.password = password;    // 새 비밀번호로 변경
+        this.nickname = nickname;    // 새 닉네임으로 변경
+        this.status = UserStatus.ACTIVE; // 상태를 다시 ACTIVE로
+    }
 }

@@ -55,7 +55,7 @@ public class UserRestController {
     public ApiResponse<String> changeEmail(@AuthenticationPrincipal PrincipalDetails principal,
                                            @RequestBody UserRequestDTO.ChangeEmailDto request) {
         userService.changeEmail(principal.getUserId(), request);
-        return ApiResponse.onSuccess(SuccessCode.OK, "이메일 주소가 성공적으로 변경되었습니다.");
+        return ApiResponse.onSuccess(SuccessCode.OK, request.getNewEmail());
     }
 
     /**

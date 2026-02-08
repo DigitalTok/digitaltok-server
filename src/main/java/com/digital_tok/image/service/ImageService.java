@@ -6,6 +6,7 @@ import com.digital_tok.image.domain.ImageMapping;
 import com.digital_tok.image.repository.ImageMappingRepository;
 import com.digital_tok.image.repository.ImageRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,6 +15,7 @@ import java.io.ByteArrayInputStream;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -26,10 +28,6 @@ public class ImageService {
 
     /**
      * 이미지 업로드: S3 업로드 + DB(image, image_mapping) 저장
-     * (로그인 전이므로 userId는 더미로 받는 상태)
-     *
-     * TODO: 이미지 업로드하는 과정은 Transaction에서 제외하고,
-     *       DB수정하는 부분만 Transaction처리하면 좋을거같음
      */
     public UploadResult uploadImage(MultipartFile file, String imageName, Long userId) {
 
@@ -37,21 +35,22 @@ public class ImageService {
         try {
             originalBytes = file.getBytes();
         } catch (Exception e) {
+            log.warn("Failed to read uploaded file bytes. imageName={}, userId={}", imageName, userId, e);
             throw new IllegalArgumentException("Failed to read uploaded file bytes", e);
         }
 
         // 1) S3 업로드 (원본)
         String originalUrl = s3Manager.uploadFile("images", file);
+        log.info("Uploaded original image to S3. userId={}, imageName={}, originalUrl={}", userId, imageName, originalUrl);
 
         // 2) e-ink 파생 생성
         ImageDerivationService.Result derived;
         try {
-            System.out.println("### DERIVE START ###");
             derived = imageDerivationService.derive(new ByteArrayInputStream(originalBytes));
-            System.out.println("### DERIVE DONE ### preview=" + derived.previewUrl() + " eink=" + derived.einkDataUrl());
+            log.info("Derived eink assets done. previewUrl={}, einkDataUrl={}", derived.previewUrl(), derived.einkDataUrl());
         } catch (Exception e) {
-            System.out.println("### DERIVE FAIL ###");
-            e.printStackTrace();
+            // 파생 실패해도 업로드 자체는 성공할 수 있게 fallback 유지
+            log.warn("Derive eink assets failed. fallback to originalUrl. userId={}, imageName={}", userId, imageName, e);
             derived = new ImageDerivationService.Result(null, null);
         }
 
@@ -78,6 +77,9 @@ public class ImageService {
 
         imageMappingRepository.save(mapping);
 
+        log.info("Saved image & mapping. imageId={}, userImageId={}, userId={}",
+                image.getImageId(), mapping.getUserImageId(), userId);
+
         return new UploadResult(image, mapping);
     }
 
@@ -86,60 +88,62 @@ public class ImageService {
         Image image = imageRepository.findById(imageId)
                 .orElseThrow(() -> new IllegalArgumentException("image not found: " + imageId));
 
-        // previewUrl 없으면(예전 데이터) fallback으로 originalUrl이라도 반환
         String url = (image.getPreviewUrl() != null && !image.getPreviewUrl().isBlank())
                 ? image.getPreviewUrl()
                 : image.getOriginalUrl();
 
+        log.debug("Preview requested. imageId={}, url={}", imageId, url);
+
         return new PreviewResult(image.getImageId(), url, LocalDateTime.now());
     }
 
+    /**
+     * binary 조회는 lastUsedAt 갱신/매핑 생성이 들어가서 readOnly 금지
+     */
     @Transactional
     public BinaryResult getBinary(Long userId, Long imageId) {
         Image image = imageRepository.findById(imageId)
                 .orElseThrow(() -> new IllegalArgumentException("image not found: " + imageId));
 
-        System.out.println("### getBinary imageId=" + imageId);
-        System.out.println("### entity.einkDataUrl=" + image.getEinkDataUrl());
-        System.out.println("### entity.previewUrl=" + image.getPreviewUrl());
-
         LocalDateTime now = LocalDateTime.now();
 
         ImageMapping mapping = imageMappingRepository.findByUserIdAndImage_ImageId(userId, imageId)
-                .orElseGet(() -> ImageMapping.builder()
-                        .userId(userId)
-                        .image(image)
-                        .isFavorite(false)
-                        .savedAt(now)
-                        .build());
+                .orElseGet(() -> {
+                    log.info("ImageMapping not found. create new mapping. userId={}, imageId={}", userId, imageId);
+                    return ImageMapping.builder()
+                            .userId(userId)
+                            .image(image)
+                            .isFavorite(false)
+                            .savedAt(now)
+                            .build();
+                });
 
         mapping.touchLastUsedAt(now);
         imageMappingRepository.save(mapping);
 
-        if (image.getEinkDataUrl() != null && !image.getEinkDataUrl().isBlank()) {
-            return new BinaryResult(image.getImageId(), image.getEinkDataUrl(), now);
-        }
+        String einkDataUrl = image.getEinkDataUrl();
+        log.info("Binary requested. userId={}, imageId={}, hasEinkDataUrl={}", userId, imageId,
+                einkDataUrl != null && !einkDataUrl.isBlank());
 
+        if (einkDataUrl != null && !einkDataUrl.isBlank()) {
+            return new BinaryResult(image.getImageId(), einkDataUrl, now);
+        }
         return new BinaryResult(image.getImageId(), null, now);
     }
 
-    /**
-     * 최근 사용한 이미지 매핑 목록 조회 (Service는 Entity/List만 반환 - Template 스타일)
-     */
     @Transactional(readOnly = true)
     public List<ImageMapping> getRecentImageMappings(Long userId) {
-
-        return imageMappingRepository
+        var list = imageMappingRepository
                 .findByUserIdAndLastUsedAtIsNotNullAndImage_DeletedAtIsNullOrderByLastUsedAtDesc(
                         userId,
                         org.springframework.data.domain.PageRequest.of(0, 14)
                 )
                 .getContent();
+
+        log.debug("Recent images requested. userId={}, count={}", userId, list.size());
+        return list;
     }
 
-    /**
-     * 즐겨찾기 업데이트 (Service는 DTO 생성 X → 결과 record 반환)
-     */
     @Transactional
     public FavoriteUpdateResult updateFavorite(Long userId, Long imageId, Boolean isFavorite) {
 
@@ -154,6 +158,8 @@ public class ImageService {
 
         mapping.updateFavorite(isFavorite);
         imageMappingRepository.save(mapping);
+
+        log.info("Favorite updated. userId={}, imageId={}, isFavorite={}", userId, imageId, isFavorite);
 
         return new FavoriteUpdateResult(mapping.getIsFavorite(), LocalDateTime.now());
     }

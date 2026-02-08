@@ -1,12 +1,14 @@
 package com.digital_tok.image.controller;
 
+import com.digital_tok.global.apiPayload.ApiResponse;
+import com.digital_tok.global.apiPayload.code.ErrorCode;
+import com.digital_tok.global.apiPayload.code.SuccessCode;
+import com.digital_tok.global.apiPayload.exception.GeneralException;
 import com.digital_tok.global.security.PrincipalDetails;
 import com.digital_tok.image.converter.ImageConverter;
 import com.digital_tok.image.dto.ImageRequestDTO;
 import com.digital_tok.image.dto.ImageResponseDTO;
 import com.digital_tok.image.service.ImageService;
-import com.digital_tok.global.apiPayload.ApiResponse;
-import com.digital_tok.global.apiPayload.code.SuccessCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -26,17 +28,22 @@ public class ImageController {
     private final ImageService imageService;
     private final ImageConverter imageConverter;
 
+    private Long requireUserId(PrincipalDetails principal) {
+        if (principal == null || principal.getUser() == null || principal.getUserId() == null) {
+            throw new GeneralException(ErrorCode.UNAUTHORIZED);
+        }
+        return principal.getUserId();
+    }
+
     /**
      * 최근 사용한 사진 조회 API (토큰 기반)
-     * - Service: List<ImageMapping> 반환
-     * - Controller: Converter로 DTO 변환
      */
     @GetMapping("/recent")
     @Operation(summary = "최근 사용한 사진 조회 API", description = "사용자가 최근에 사용한 사진 목록을 조회합니다.")
     public ApiResponse<ImageResponseDTO.RecentImageListDto> getRecentImages(
             @AuthenticationPrincipal PrincipalDetails principal
     ) {
-        Long userId = principal.getUserId();
+        Long userId = requireUserId(principal);
 
         var mappings = imageService.getRecentImageMappings(userId);
         var result = imageConverter.toRecentImageListDto(mappings);
@@ -56,7 +63,7 @@ public class ImageController {
             @Parameter(description = "이미지 이름", example = "myphoto_001")
             @RequestParam("imageName") String imageName
     ) {
-        Long userId = principal.getUserId();
+        Long userId = requireUserId(principal);
 
         var r = imageService.uploadImage(file, imageName, userId);
         var result = imageConverter.toUploadResultDto(r);
@@ -66,7 +73,7 @@ public class ImageController {
 
     /**
      * 이미지 미리보기 조회 API
-     * (미리보기는 userId가 굳이 필요 없으면 토큰 없이도 가능하게 둬도 됨)
+     * (유저 구분이 필요 없으면 토큰 없이도 가능)
      */
     @GetMapping("/{imageId}/preview")
     public ApiResponse<ImageResponseDTO.PreviewResultDto> getImagePreview(
@@ -87,12 +94,11 @@ public class ImageController {
             @AuthenticationPrincipal PrincipalDetails principal,
             @PathVariable Long imageId
     ) {
-        Long userId = principal.getUserId();
+        Long userId = requireUserId(principal);
 
         var r = imageService.getBinary(userId, imageId);
         var result = imageConverter.toBinaryResultDto(r);
 
-        // 기존 컨벤션 유지: result만 내려주는 형태
         return ApiResponse.onSuccessResultOnly(result);
     }
 
@@ -106,7 +112,7 @@ public class ImageController {
             @PathVariable Long imageId,
             @RequestBody ImageRequestDTO.FavoriteDto request
     ) {
-        Long userId = principal.getUserId();
+        Long userId = requireUserId(principal);
 
         var r = imageService.updateFavorite(userId, imageId, request.getIsFavorite());
 

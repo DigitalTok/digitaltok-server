@@ -14,6 +14,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.digital_tok.global.security.PrincipalDetails; // 예시
+
+
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -191,6 +195,7 @@ public class ImageController {
     public ApiResponse<ImageResponseDTO.BinaryResultDto> getImageBinary(
             @PathVariable Long imageId) {
         System.out.println("### HIT /binary imageId=" + imageId);
+
         Long userId = 1L;//더미 데이터-- 추후 jwt추출로 변경
         var r = imageService.getBinary(userId, imageId);
 

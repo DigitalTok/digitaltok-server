@@ -25,8 +25,13 @@ public enum ErrorCode implements BaseErrorCode{
     DEVICE_ALREADY_CONNECTED(HttpStatus.BAD_REQUEST, "DEVICE400", "기기가 이미 연결되어 있습니다."),
     DEVICE_ALREADY_DISCONNECTED(HttpStatus.BAD_REQUEST, "DEVICE401", "기기가 연결 해제되어 있습니다."),
     // Image 관련 에러
+    IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "IMAGE404_1", "이미지를 찾을 수 없습니다."),
+    IMAGE_MAPPING_NOT_FOUND(HttpStatus.NOT_FOUND, "IMAGE404_2", "이미지 매핑 정보를 찾을 수 없습니다."),
+    IMAGE_BAD_REQUEST(HttpStatus.BAD_REQUEST, "IMAGE400_1", "이미지 요청 값이 올바르지 않습니다."),
     IMAGE_UPLOAD_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "IMAGE500_1", "이미지 업로드에 실패했습니다."), // 세미콜론(;) 주의
     IMAGE_TO_BINARY_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "IMAGE500_2", "이미지를 바이너리 데이터로 변환시키기에 실패했습니다."),
+    IMAGE_DERIVE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "IMAGE500_3", "E-ink 파생 이미지 생성에 실패했습니다."),
+
 
     // Template 관련 에러
     TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "TEMPLATE404_1", "해당 템플릿을 찾을 수 없습니다."),

@@ -23,7 +23,7 @@ import com.digital_tok.image.repository.ImageMappingRepository;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/images")
+@RequestMapping("/api/v1/images")
 @Tag(name = "Image", description = "이미지 관련 API")
 public class ImageController {
 

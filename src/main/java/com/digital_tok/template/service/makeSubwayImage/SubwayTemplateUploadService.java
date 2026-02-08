@@ -55,7 +55,7 @@ public class SubwayTemplateUploadService { // 이미지 생성 후 S3에 업로�
 
         } catch (IOException e) {
             log.error("바이너리 데이터 변환 중 오류 발생: {}", e.getMessage(), e);
-            throw new GeneralException(ErrorCode.IMAGE_TO_BINARY_ERROR); // 또는 적절한 다른 에러코드
+            throw new GeneralException(ErrorCode.IMAGE_TO_BINARY_ERROR);
         }
 
         // 3. S3 업로드

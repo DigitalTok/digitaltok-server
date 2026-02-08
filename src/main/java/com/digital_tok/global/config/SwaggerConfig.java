@@ -105,7 +105,7 @@ public class SwaggerConfig {
             // 기존에 200 응답만 있고 에러 응답이 없으면 새로 추가
             ApiResponse apiResponse = new ApiResponse();
             apiResponse.setContent(content);
-            apiResponse.setDescription("에러 응답 (상세 예시는 Example Value 확인)");
+            apiResponse.setDescription("에러 응답 (상세 예시는 Example Value의 message 확인)");
 
             responses.addApiResponse(String.valueOf(status), apiResponse);
         });

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 @Tag(name = "Priority", description = "교통약자 템플릿 관련 API")
 public interface PriorityControllerDocs {
 
-    @Operation(summary = "전체 교통약자 템플릿 목록 조회 API", description = "전체 교통약자 템플릿 목록을 반환합니다.")
+    @Operation(summary = "전체 교통약자 템플릿 목록 조회 API By 이정헌 (개발 완료)", description = "전체 교통약자 템플릿 목록을 반환합니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "200",
@@ -23,7 +23,7 @@ public interface PriorityControllerDocs {
     ApiResponse<PriorityResponseDTO.PriorityListDto> getPriorityTemplates();
 
 
-    @Operation(summary = "단일 교통약자 템플릿 조회 API", description = "단일 교통약자 템플릿의 상세정보를 반환합니다.")
+    @Operation(summary = "단일 교통약자 템플릿 조회 API By 이정헌 (개발 완료)", description = "단일 교통약자 템플릿의 상세정보를 반환합니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "200",

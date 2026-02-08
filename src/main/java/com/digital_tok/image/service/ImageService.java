@@ -1,20 +1,23 @@
 package com.digital_tok.image.service;
 
+import com.digital_tok.global.AmazonS3Manager;
+import com.digital_tok.global.apiPayload.code.ErrorCode;
+import com.digital_tok.global.apiPayload.exception.GeneralException;
 import com.digital_tok.image.domain.Image;
 import com.digital_tok.image.domain.ImageMapping;
 import com.digital_tok.image.repository.ImageMappingRepository;
 import com.digital_tok.image.repository.ImageRepository;
-import com.digital_tok.global.AmazonS3Manager;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import java.util.List;
-import com.digital_tok.image.dto.ImageResponseDTO;
+
+import java.io.ByteArrayInputStream;
 import java.time.LocalDateTime;
-import org.springframework.data.domain.PageRequest;
+import java.util.List;
 
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -27,32 +30,42 @@ public class ImageService {
 
     /**
      * 이미지 업로드: S3 업로드 + DB(image, image_mapping) 저장
-     * (로그인 전이므로 userId는 더미로 받는 상태)
      */
-    // TODO: 이미지 업로드하는 과정은 Transaction에서 제외하고, DB수정하는 부분만 Transaction처리하면 좋을거같음 
     public UploadResult uploadImage(MultipartFile file, String imageName, Long userId) {
+
+        // param validation
+        if (file == null || file.isEmpty() || imageName == null || imageName.isBlank() || userId == null) {
+            throw new GeneralException(ErrorCode.IMAGE_BAD_REQUEST);
+        }
 
         byte[] originalBytes;
         try {
             originalBytes = file.getBytes();
         } catch (Exception e) {
-            throw new IllegalArgumentException("Failed to read uploaded file bytes", e);
+            log.warn("Failed to read uploaded file bytes. imageName={}, userId={}", imageName, userId, e);
+            throw new GeneralException(ErrorCode.IMAGE_UPLOAD_FAIL);
         }
 
         // 1) S3 업로드 (원본)
-        // 가능하면 s3Manager도 bytes 업로드 버전이 있으면 그걸 쓰는 게 제일 좋음
-        String originalUrl = s3Manager.uploadFile("images", file);
+        String originalUrl;
+        try {
+            originalUrl = s3Manager.uploadFile("images", file);
+        } catch (Exception e) {
+            log.error("S3 upload failed. imageName={}, userId={}", imageName, userId, e);
+            throw new GeneralException(ErrorCode.IMAGE_UPLOAD_FAIL);
+        }
 
-        // 2) e-ink 파생 생성
+        // 2) e-ink 파생 생성 (실패해도 업로드 성공 유지: fallback 정책)
         ImageDerivationService.Result derived;
         try {
-            System.out.println("### DERIVE START ###");
-            derived = imageDerivationService.derive(new java.io.ByteArrayInputStream(originalBytes));
-            System.out.println("### DERIVE DONE ### preview=" + derived.previewUrl() + " eink=" + derived.einkDataUrl());
+            derived = imageDerivationService.derive(new ByteArrayInputStream(originalBytes));
+            log.info("Derived eink assets done. previewUrl={}, einkDataUrl={}", derived.previewUrl(), derived.einkDataUrl());
         } catch (Exception e) {
-            System.out.println("### DERIVE FAIL ###");
-            e.printStackTrace();
+            // 정책: 파생 실패해도 업로드 자체는 성공시키고 fallback
+            log.warn("Derive eink assets failed. fallback to originalUrl. imageName={}, userId={}", imageName, userId, e);
             derived = new ImageDerivationService.Result(null, null);
+            // strict 정책으로 가려면 아래 주석 해제
+            // throw new GeneralException(ErrorCode.IMAGE_DERIVE_FAIL);
         }
 
         LocalDateTime now = LocalDateTime.now();
@@ -78,112 +91,117 @@ public class ImageService {
 
         imageMappingRepository.save(mapping);
 
+        log.info("Saved image & mapping. imageId={}, userImageId={}, userId={}",
+                image.getImageId(), mapping.getUserImageId(), userId);
+
         return new UploadResult(image, mapping);
     }
 
     @Transactional(readOnly = true)
     public PreviewResult getPreview(Long imageId) {
-        Image image = imageRepository.findById(imageId)
-                .orElseThrow(() -> new IllegalArgumentException("image not found: " + imageId));
+        if (imageId == null) {
+            throw new GeneralException(ErrorCode.IMAGE_BAD_REQUEST);
+        }
 
-        // previewUrl 없으면(예전 데이터) fallback으로 originalUrl이라도 반환
+        Image image = imageRepository.findById(imageId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.IMAGE_NOT_FOUND));
+
+        // previewUrl 없으면 fallback으로 originalUrl
         String url = (image.getPreviewUrl() != null && !image.getPreviewUrl().isBlank())
                 ? image.getPreviewUrl()
                 : image.getOriginalUrl();
 
+        log.debug("Preview requested. imageId={}, url={}", imageId, url);
+
         return new PreviewResult(image.getImageId(), url, LocalDateTime.now());
     }
 
-    @Transactional(readOnly = true)
+    /**
+     * binary 조회는 lastUsedAt 갱신/매핑 생성이 들어가서 readOnly 금지
+     */
+    @Transactional
     public BinaryResult getBinary(Long userId, Long imageId) {
-        Image image = imageRepository.findById(imageId)
-                .orElseThrow(() -> new IllegalArgumentException("image not found: " + imageId));
+        if (userId == null || imageId == null) {
+            throw new GeneralException(ErrorCode.IMAGE_BAD_REQUEST);
+        }
 
-        System.out.println("### getBinary imageId=" + imageId);
-        System.out.println("### entity.einkDataUrl=" + image.getEinkDataUrl());
-        System.out.println("### entity.previewUrl=" + image.getPreviewUrl());
+        Image image = imageRepository.findById(imageId)
+                .orElseThrow(() -> new GeneralException(ErrorCode.IMAGE_NOT_FOUND));
 
         LocalDateTime now = LocalDateTime.now();
 
         ImageMapping mapping = imageMappingRepository.findByUserIdAndImage_ImageId(userId, imageId)
-                .orElseGet(() -> ImageMapping.builder()
-                        .userId(userId)
-                        .image(image)
-                        .isFavorite(false)
-                        .savedAt(now)
-                        .build());
+                .orElseGet(() -> {
+                    log.info("ImageMapping not found. create new mapping. userId={}, imageId={}", userId, imageId);
+                    return ImageMapping.builder()
+                            .userId(userId)
+                            .image(image)
+                            .isFavorite(false)
+                            .savedAt(now)
+                            .build();
+                });
 
-        mapping.touchLastUsedAt(now);
-        imageMappingRepository.save(mapping);
-
-        if (image.getEinkDataUrl() != null && !image.getEinkDataUrl().isBlank()) {
-            BinaryResult br = new BinaryResult(image.getImageId(), image.getEinkDataUrl(), now);
-            System.out.println("### SERVICE br.class=" + br.getClass());
-            System.out.println("### SERVICE br=" + br);
-            System.out.println("### SERVICE br.hash=" + System.identityHashCode(br));
-            return br;
+        try {
+            mapping.touchLastUsedAt(now);
+            imageMappingRepository.save(mapping);
+        } catch (Exception e) {
+            log.error("Failed to upsert image_mapping. userId={}, imageId={}", userId, imageId, e);
+            throw new GeneralException(ErrorCode._INTERNAL_SERVER_ERROR);
         }
 
-        BinaryResult br = new BinaryResult(image.getImageId(), null, now);
-        System.out.println("### SERVICE br=" + br);
-        System.out.println("### SERVICE br.hash=" + System.identityHashCode(br));
-        return br;
+        String einkDataUrl = image.getEinkDataUrl();
+        boolean hasEink = einkDataUrl != null && !einkDataUrl.isBlank();
+        log.info("Binary requested. userId={}, imageId={}, hasEinkDataUrl={}", userId, imageId, hasEink);
 
+        // 정책: einkDataUrl 없으면 null로 내려줌(현재 로직 유지)
+        return new BinaryResult(
+                image.getImageId(),
+                hasEink ? einkDataUrl : null,
+                now
+        );
     }
-    @Transactional(readOnly = true)
-    public ImageResponseDTO.RecentImageListDto getRecentImages(Long userId) {
 
-        List<ImageMapping> mappings = imageMappingRepository
+    @Transactional(readOnly = true)
+    public List<ImageMapping> getRecentImageMappings(Long userId) {
+        if (userId == null) {
+            throw new GeneralException(ErrorCode.IMAGE_BAD_REQUEST);
+        }
+
+        var list = imageMappingRepository
                 .findByUserIdAndLastUsedAtIsNotNullAndImage_DeletedAtIsNullOrderByLastUsedAtDesc(
                         userId,
                         org.springframework.data.domain.PageRequest.of(0, 14)
                 )
                 .getContent();
 
-        List<ImageResponseDTO.RecentImageDto> items = mappings.stream()
-                .map(m -> ImageResponseDTO.RecentImageDto.builder()
-                        .imageId(m.getImage().getImageId())
-                        .previewUrl(m.getImage().getPreviewUrl())
-                        .imageName(m.getImage().getImageName())
-                        .isFavorite(m.getIsFavorite())
-                        .lastUsedAt(m.getLastUsedAt())
-                        .build())
-                .toList();
-
-        return ImageResponseDTO.RecentImageListDto.builder()
-                .count(items.size())
-                .items(items)
-                .build();
+        log.debug("Recent images requested. userId={}, count={}", userId, list.size());
+        return list;
     }
-    @Transactional
-    public ImageResponseDTO.FavoriteResultDto updateFavorite(Long userId, Long imageId, Boolean isFavorite) {
 
-        if (isFavorite == null) {
-            throw new IllegalArgumentException("isFavorite is required");
+    @Transactional
+    public FavoriteUpdateResult updateFavorite(Long userId, Long imageId, Boolean isFavorite) {
+        if (userId == null || imageId == null || isFavorite == null) {
+            throw new GeneralException(ErrorCode.IMAGE_BAD_REQUEST);
         }
 
         ImageMapping mapping = imageMappingRepository.findByUserIdAndImage_ImageId(userId, imageId)
-                .orElseThrow(() -> new IllegalArgumentException("image mapping not found. userId=" + userId + ", imageId=" + imageId));
+                .orElseThrow(() -> new GeneralException(ErrorCode.IMAGE_MAPPING_NOT_FOUND));
 
-        // 즐겨찾기 값 변경
-        // (setter 없으니 ImageMapping에 update 메서드 하나 추가하는 게 깔끔)
-        mapping.updateFavorite(isFavorite);
+        try {
+            mapping.updateFavorite(isFavorite);
+            imageMappingRepository.save(mapping);
+        } catch (Exception e) {
+            log.error("Failed to update favorite. userId={}, imageId={}, isFavorite={}", userId, imageId, isFavorite, e);
+            throw new GeneralException(ErrorCode._INTERNAL_SERVER_ERROR);
+        }
 
-        // JPA dirty checking으로 저장되지만, 명시적으로 save 해도 OK
-        imageMappingRepository.save(mapping);
-
-        return ImageResponseDTO.FavoriteResultDto.builder()
-                .userId(userId)
-                .imageId(imageId)
-                .isFavorite(mapping.getIsFavorite())
-                .updatedAt(LocalDateTime.now())
-                .build();
+        log.info("Favorite updated. userId={}, imageId={}, isFavorite={}", userId, imageId, isFavorite);
+        return new FavoriteUpdateResult(mapping.getIsFavorite(), LocalDateTime.now());
     }
-
 
     // 반환용 record
     public record UploadResult(Image image, ImageMapping mapping) {}
     public record PreviewResult(Long imageId, String previewUrl, LocalDateTime updatedAt) {}
     public record BinaryResult(Long imageId, String einkDataUrl, LocalDateTime lastUsedAt) {}
+    public record FavoriteUpdateResult(Boolean isFavorite, LocalDateTime updatedAt) {}
 }
-

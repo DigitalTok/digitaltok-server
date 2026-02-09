@@ -1,6 +1,5 @@
 package com.digital_tok.device.domain;
 
-import com.digital_tok.user.domain.TestUser;
 import com.digital_tok.global.apiPayload.exception.GeneralException;
 import com.digital_tok.global.apiPayload.code.ErrorCode;
 import com.digital_tok.user.domain.User;

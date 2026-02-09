@@ -10,7 +10,6 @@ public enum ErrorCode implements BaseErrorCode{
 
     // 공통 에러
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "COMMON400_1", "잘못된 입력 값입니다."),
-
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "COMMON405_1", "허용되지 않은 메서드입니다."),
     NOT_FOUND(HttpStatus.NOT_FOUND, "COMMON404_1", "요청한 리소스를 찾을 수 없습니다."),
     _INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON500", "서버 에러, 관리자에게 문의하세요."),
@@ -24,6 +23,7 @@ public enum ErrorCode implements BaseErrorCode{
     DEVICE_NOT_FOUND(HttpStatus.NOT_FOUND, "DEVICE404", "요청한 기기를 찾을 수 없습니다."),
     DEVICE_ALREADY_CONNECTED(HttpStatus.BAD_REQUEST, "DEVICE400", "기기가 이미 연결되어 있습니다."),
     DEVICE_ALREADY_DISCONNECTED(HttpStatus.BAD_REQUEST, "DEVICE401", "기기가 연결 해제되어 있습니다."),
+
     // Image 관련 에러
     IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "IMAGE404_1", "이미지를 찾을 수 없습니다."),
     IMAGE_MAPPING_NOT_FOUND(HttpStatus.NOT_FOUND, "IMAGE404_2", "이미지 매핑 정보를 찾을 수 없습니다."),

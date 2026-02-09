@@ -16,7 +16,7 @@ public class AuthRequestDTO {
         @Size(min = 6, max = 20, message = "비밀번호는 6자 이상 20자 이하로 입력해주세요.")
         private String password;    // 필수
 
-        @Pattern(regexp = "^\\d{2,3}-\\d{3,4}-\\d{4}$", message = "핸드폰 번호의 양식과 맞지 않습니다. 01x-xxxx-xxxx")
+        @Pattern(regexp = "^\\d{2,3}-\\d{3,4}-\\d{4}$", message = "핸드폰 번호의 양식과 맞지 않습니다. 010-xxxx-xxxx")
         private String phoneNumber; // 선택
     }
 
@@ -28,6 +28,7 @@ public class AuthRequestDTO {
         private String email;       // 필수
 
         @NotBlank(message = "비밀번호를 입력해주세요.")
+        @Size(min = 6, max = 20, message = "비밀번호는 6자 이상 20자 이하로 입력해주세요.")
         private String password;    // 필수
     }
 

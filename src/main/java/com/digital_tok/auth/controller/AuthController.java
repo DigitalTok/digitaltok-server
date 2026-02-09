@@ -24,7 +24,7 @@ public class AuthController {
      */
     @PostMapping("/signup")
     @Operation(summary = "회원가입 API", description = "이메일, 비밀번호, 닉네임 등을 받아 회원을 생성합니다.")
-    public ApiResponse<AuthResponseDTO.JoinResultDto> join(@RequestBody AuthRequestDTO.JoinDto request) {
+    public ApiResponse<AuthResponseDTO.JoinResultDto> join(@RequestBody @Valid AuthRequestDTO.JoinDto request) {
         AuthResponseDTO.JoinResultDto result = authService.join(request);
         return ApiResponse.onSuccess(SuccessCode.OK, result);
     }

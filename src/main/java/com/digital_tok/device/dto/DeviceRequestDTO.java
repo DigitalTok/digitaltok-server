@@ -5,6 +5,6 @@ import lombok.Getter;
 
 @Getter
 public class DeviceRequestDTO {
-    @NotBlank
+    @NotBlank(message = "NFC UID는 필수입니다.")
     private String nfcUid; // NFC UID
 }

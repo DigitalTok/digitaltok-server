@@ -12,6 +12,7 @@ import com.digital_tok.template.service.SubwayService;
 import com.digital_tok.template.service.makeSubwayImage.SubwayTemplateUploadService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
@@ -77,7 +78,7 @@ public class SubwayController implements SubwayControllerDocs{
             ErrorCode.IMAGE_UPLOAD_FAIL,      // 500 (S3 업로드 실패)
             ErrorCode.IMAGE_TO_BINARY_ERROR   // 500 (바이너리 변환 실패)
     })
-    public ApiResponse<String> createSubwayTemplate(@RequestBody SubwayCreateRequestDTO request) {
+    public ApiResponse<String> createSubwayTemplate(@RequestBody @Valid SubwayCreateRequestDTO request) {
 
         Long templateId = subwayTemplateUploadService.createAndSaveSubwayTemplate(
                 request.getStationName(),

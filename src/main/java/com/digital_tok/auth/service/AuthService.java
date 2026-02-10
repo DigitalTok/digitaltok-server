@@ -1,5 +1,6 @@
 package com.digital_tok.auth.service;
 
+import com.digital_tok.auth.converter.AuthConverter;
 import com.digital_tok.auth.domain.RefreshToken;
 import com.digital_tok.auth.dto.AuthRequestDTO;
 import com.digital_tok.auth.dto.AuthResponseDTO;
@@ -34,6 +35,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final JavaMailSender javaMailSender; // 메일 전송 객체 주입
+    private final AuthConverter authConverter;
 
     /**
      * 1. 회원가입
@@ -58,12 +60,8 @@ public class AuthService {
             // User 엔티티의 reactivate 메서드 호출 (비밀번호 암호화 필수!)
             user.reactivate(passwordEncoder.encode(request.getPassword()), randomNickname);
 
-            // 기존 객체를 반환 (save 불필요, Dirty Checking으로 자동 업데이트)
-            return AuthResponseDTO.JoinResultDto.builder()
-                    .userId(user.getId())
-                    .email(user.getEmail())
-                    .nickname(user.getNickname())
-                    .build();
+            // Converter
+            return authConverter.toJoinResultDto(user);
         }
 
         // 1-2. 닉네임 랜덤 생성 (예: User_a1b2c3d4)
@@ -89,12 +87,8 @@ public class AuthService {
         // 1-4. DB 저장
         User savedUser = userRepository.save(newUser);
 
-        // 1-5. 응답 DTO 반환
-        return AuthResponseDTO.JoinResultDto.builder()
-                .userId(savedUser.getId())
-                .email(savedUser.getEmail())
-                .nickname(savedUser.getNickname())
-                .build();
+        // Converter
+        return authConverter.toJoinResultDto(savedUser);
     }
 
     /**
@@ -132,13 +126,7 @@ public class AuthService {
         rt.updateToken(refreshToken); // 더티 체킹으로 업데이트 or 새로 생성된 객체면 값 설정
         refreshTokenRepository.save(rt);
 
-        // 2-6. 응답 DTO 반환
-        return AuthResponseDTO.LoginResultDto.builder()
-                .grantType("Bearer")
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .accessTokenExpiresIn(3600L) // 1시간 (설정과 맞춤)
-                .build();
+        return authConverter.toLoginResultDto(accessToken, refreshToken);
     }
 
     /**

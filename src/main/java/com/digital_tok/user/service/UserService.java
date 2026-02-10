@@ -3,6 +3,7 @@ package com.digital_tok.user.service;
 import com.digital_tok.auth.repository.RefreshTokenRepository;
 import com.digital_tok.global.apiPayload.code.ErrorCode;
 import com.digital_tok.global.apiPayload.exception.GeneralException;
+import com.digital_tok.user.converter.UserConverter;
 import com.digital_tok.user.domain.User;
 import com.digital_tok.user.dto.UserRequestDTO;
 import com.digital_tok.user.dto.UserResponseDTO;
@@ -20,6 +21,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final UserConverter userConverter;
 
     /**
      * 1. 회원 탈퇴
@@ -105,11 +107,6 @@ public class UserService {
     public UserResponseDTO.MyProfileDto getProfile(Long userId) {
         User user = getUserById(userId);
 
-        return UserResponseDTO.MyProfileDto.builder()
-                .userId(user.getId())
-                //.name(user.getName())
-                .nickname(user.getNickname())
-                .email(user.getEmail())
-                .build();
+        return userConverter.toMyProfileDto(user);
     }
 }

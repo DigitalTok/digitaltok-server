@@ -7,6 +7,10 @@ import com.digital_tok.global.apiPayload.ApiResponse;
 import com.digital_tok.global.apiPayload.code.ApiErrorCodes;
 import com.digital_tok.global.apiPayload.code.ErrorCode;
 import com.digital_tok.global.apiPayload.code.SuccessCode;
+import com.digital_tok.auth.service.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,7 +29,7 @@ public class AuthController implements AuthControllerDocs {
     @ApiErrorCodes({
             ErrorCode.MEMBER_ALREADY_REGISTERED // 이미 가입된 이메일인 경우
     })
-    public ApiResponse<AuthResponseDTO.JoinResultDto> join(@RequestBody AuthRequestDTO.JoinDto request) {
+    public ApiResponse<AuthResponseDTO.JoinResultDto> join(@RequestBody @Valid AuthRequestDTO.JoinDto request) {
         AuthResponseDTO.JoinResultDto result = authService.join(request);
         return ApiResponse.onSuccess(SuccessCode.OK, result);
     }
@@ -39,7 +43,7 @@ public class AuthController implements AuthControllerDocs {
             ErrorCode.MEMBER_NOT_FOUND, // 가입되지 않은 이메일
             ErrorCode.BAD_REQUEST       // 비밀번호 불일치
     })
-    public ApiResponse<AuthResponseDTO.LoginResultDto> login(@RequestBody AuthRequestDTO.LoginDto request) {
+    public ApiResponse<AuthResponseDTO.LoginResultDto> login(@RequestBody @Valid AuthRequestDTO.LoginDto request) {
         AuthResponseDTO.LoginResultDto result = authService.login(request);
         return ApiResponse.onSuccess(SuccessCode.OK, result);
     }
@@ -52,7 +56,7 @@ public class AuthController implements AuthControllerDocs {
     @ApiErrorCodes({
             ErrorCode.BAD_REQUEST // 유효하지 않은 Refresh Token
     })
-    public ApiResponse<String> logout(@RequestBody AuthRequestDTO.LogoutDto request) {
+    public ApiResponse<String> logout(@RequestBody @Valid AuthRequestDTO.LogoutDto request) {
         authService.logout(request);
         return ApiResponse.onSuccess(SuccessCode.OK, "로그아웃에 성공했습니다.");
     }
@@ -65,7 +69,7 @@ public class AuthController implements AuthControllerDocs {
     @ApiErrorCodes({
             ErrorCode.MEMBER_ALREADY_REGISTERED // 이미 존재하는 이메일 (409)
     })
-    public ApiResponse<String> checkEmail(@RequestBody AuthRequestDTO.CheckEmailDto request) {
+    public ApiResponse<String> checkEmail(@RequestBody @Valid AuthRequestDTO.CheckEmailDto request) {
         authService.checkEmailDuplicate(request.getEmail());
         return ApiResponse.onSuccess(SuccessCode.OK, "사용 가능한 이메일입니다.");
     }
@@ -79,7 +83,7 @@ public class AuthController implements AuthControllerDocs {
             ErrorCode.MEMBER_NOT_FOUND,      // 가입되지 않은 이메일
             ErrorCode._INTERNAL_SERVER_ERROR // 메일 전송 실패
     })
-    public ApiResponse<String> resetPassword(@RequestBody AuthRequestDTO.ResetPasswordDto request) {
+    public ApiResponse<String> resetPassword(@RequestBody @Valid AuthRequestDTO.ResetPasswordDto request) {
         authService.resetPassword(request);
         return ApiResponse.onSuccess(SuccessCode.OK, "임시 비밀번호가 이메일로 전송되었습니다.");
     }

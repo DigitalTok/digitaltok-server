@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -110,7 +111,7 @@ public class ImageController {
     public ApiResponse<ImageResponseDTO.FavoriteResultDto> toggleFavorite(
             @AuthenticationPrincipal PrincipalDetails principal,
             @PathVariable Long imageId,
-            @RequestBody ImageRequestDTO.FavoriteDto request
+            @RequestBody @Valid ImageRequestDTO.FavoriteDto request
     ) {
         Long userId = requireUserId(principal);
 

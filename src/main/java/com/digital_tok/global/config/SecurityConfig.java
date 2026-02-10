@@ -51,6 +51,9 @@ public class SecurityConfig {
                         // 인증 없이 접근 가능한 경로 (로그인, 회원가입, 스웨거 등)
                         .requestMatchers("/api/v1/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/health").permitAll()
 
+                        // ADMIN 전용 - 이미지 생성은 관리자만 가능
+                        .requestMatchers("/api/v1/templates/subway/generate").hasRole("ADMIN")
+
                         // 그 외 모든 요청은 인증(로그인) 필요
                         .anyRequest().authenticated()
                 )

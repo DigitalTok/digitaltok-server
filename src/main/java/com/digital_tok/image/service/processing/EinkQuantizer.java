@@ -105,7 +105,7 @@ public class EinkQuantizer {
         int dYellow = dist2(r, g, b, YELLOW[0], YELLOW[1], YELLOW[2]);
         int dRed = dist2(r, g, b, RED[0], RED[1], RED[2]);
 
-        // ✅ Blue 계열이면 RED/YELLOW로 점이 튀는게 가장 어색함 → 거리 penalty로 억제
+        // Blue 계열이 RED/YELLOW로 점이 튀는게 가장 어색함 → 거리 penalty로 억제
         if (blue) {
             dRed = (int)(dRed * 1.35);
             dYellow = (int)(dYellow * 1.20);
@@ -116,7 +116,7 @@ public class EinkQuantizer {
 
         if (dWhite < min) { min = dWhite; best = WHITE; }
         if (dYellow < min) { min = dYellow; best = YELLOW; }
-        if (dRed < min) { min = dRed; best = RED; }  // ⚠️ 너 원래 코드 버그: min 갱신 안 했음
+        if (dRed < min) { min = dRed; best = RED; }
 
         return best;
     }

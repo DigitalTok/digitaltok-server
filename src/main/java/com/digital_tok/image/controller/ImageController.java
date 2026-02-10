@@ -1,4 +1,3 @@
-// ✅ 수정 파일: src/main/java/com/digital_tok/image/controller/ImageController.java
 package com.digital_tok.image.controller;
 
 import com.digital_tok.global.apiPayload.ApiResponse;

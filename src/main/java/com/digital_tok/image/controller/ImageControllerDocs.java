@@ -21,7 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Tag(name = "Image", description = "이미지 관련 API")
 public interface ImageControllerDocs {
 
-    @Operation(summary = "최근 사용한 사진 조회 API by 송정은 (개발 완료)", description = "사용자가 최근에 사용한 사진 목록을 조회합니다.")
+    @Operation(summary = "최근 사용한 사진 조회 API By 송정은 (개발 완료)", description = "사용자가 최근에 사용한 사진 목록을 조회합니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "200",
@@ -34,7 +34,7 @@ public interface ImageControllerDocs {
             @AuthenticationPrincipal PrincipalDetails principal
     );
 
-    @Operation(summary = "이미지 업로드 API by 송정은 (개발완료) ", description = "이미지 파일과 이름을 받아 서버에 업로드합니다.")
+    @Operation(summary = "이미지 업로드 API By 송정은 (개발완료) ", description = "이미지 파일과 이름을 받아 서버에 업로드합니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "200",
@@ -56,7 +56,7 @@ public interface ImageControllerDocs {
             @RequestParam("imageName") String imageName
     );
 
-    @Operation(summary = "이미지 미리보기 조회 API by 송정은 (개발 완료)", description = "이미지 ID로 미리보기 URL을 조회합니다. previewUrl이 없으면 originalUrl로 fallback합니다.")
+    @Operation(summary = "이미지 미리보기 조회 API By 송정은 (개발 완료)", description = "이미지 ID로 미리보기 URL을 조회합니다. previewUrl이 없으면 originalUrl로 fallback합니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "200",
@@ -69,7 +69,7 @@ public interface ImageControllerDocs {
             @PathVariable Long imageId
     );
 
-    @Operation(summary = "이미지 바이너리 데이터 조회 API by 송정은 (개발 완료)", description = "기기로 전송할 변환된 E-ink 바이너리 파일(.bin)의 URL을 조회합니다.")
+    @Operation(summary = "이미지 바이너리 데이터 조회 API By 송정은 (개발 완료)", description = "기기로 전송할 변환된 E-ink 바이너리 파일(.bin)의 URL을 조회합니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "200",
@@ -85,7 +85,7 @@ public interface ImageControllerDocs {
             @PathVariable Long imageId
     );
 
-    @Operation(summary = "이미지 즐겨찾기 등록/해제 API by 송정은 (개발완료)", description = "이미지의 즐겨찾기 상태를 변경합니다.")
+    @Operation(summary = "이미지 즐겨찾기 등록/해제 API By 송정은 (개발완료)", description = "이미지의 즐겨찾기 상태를 변경합니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "200",

@@ -1,6 +1,7 @@
 package com.digital_tok.image.controller;
 
 import com.digital_tok.global.apiPayload.ApiResponse;
+import com.digital_tok.global.apiPayload.code.ApiErrorCodes;
 import com.digital_tok.global.apiPayload.code.ErrorCode;
 import com.digital_tok.global.apiPayload.code.SuccessCode;
 import com.digital_tok.global.apiPayload.exception.GeneralException;
@@ -23,8 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/images")
-@Tag(name = "Image", description = "이미지 관련 API")
-public class ImageController {
+public class ImageController implements ImageControllerDocs {
 
     private final ImageService imageService;
     private final ImageConverter imageConverter;
@@ -39,8 +39,12 @@ public class ImageController {
     /**
      * 최근 사용한 사진 조회 API (토큰 기반)
      */
+    @Override
     @GetMapping("/recent")
-    @Operation(summary = "최근 사용한 사진 조회 API", description = "사용자가 최근에 사용한 사진 목록을 조회합니다.")
+    @ApiErrorCodes({
+            ErrorCode.UNAUTHORIZED,
+            ErrorCode.IMAGE_BAD_REQUEST
+    })
     public ApiResponse<ImageResponseDTO.RecentImageListDto> getRecentImages(
             @AuthenticationPrincipal PrincipalDetails principal
     ) {
@@ -55,13 +59,17 @@ public class ImageController {
     /**
      * 이미지 업로드 API (토큰 기반)
      */
+    @Override
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "이미지 업로드 API", description = "이미지 파일과 이름을 받아 서버에 업로드합니다.")
+    @ApiErrorCodes({
+            ErrorCode.UNAUTHORIZED,
+            ErrorCode.IMAGE_BAD_REQUEST,
+            ErrorCode.IMAGE_UPLOAD_FAIL
+            // NOTE: IMAGE_DERIVE_FAIL은 현재 정책상 throw 하지 않으므로 문서화에서 제외
+    })
     public ApiResponse<ImageResponseDTO.UploadResultDto> uploadImage(
             @AuthenticationPrincipal PrincipalDetails principal,
-            @Parameter(description = "업로드할 이미지 파일", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
             @RequestPart("file") MultipartFile file,
-            @Parameter(description = "이미지 이름", example = "myphoto_001")
             @RequestParam("imageName") String imageName
     ) {
         Long userId = requireUserId(principal);
@@ -76,7 +84,12 @@ public class ImageController {
      * 이미지 미리보기 조회 API
      * (유저 구분이 필요 없으면 토큰 없이도 가능)
      */
+    @Override
     @GetMapping("/{imageId}/preview")
+    @ApiErrorCodes({
+            ErrorCode.IMAGE_BAD_REQUEST,
+            ErrorCode.IMAGE_NOT_FOUND
+    })
     public ApiResponse<ImageResponseDTO.PreviewResultDto> getImagePreview(
             @PathVariable Long imageId
     ) {
@@ -89,8 +102,14 @@ public class ImageController {
     /**
      * 이미지 바이너리 데이터 URL 조회 API (토큰 기반)
      */
+    @Override
     @GetMapping("/{imageId}/binary")
-    @Operation(summary = "이미지 바이너리 데이터 조회 API", description = "기기로 전송할 변환된 E-ink 바이너리 파일(.bin)의 URL을 조회합니다.")
+    @ApiErrorCodes({
+            ErrorCode.UNAUTHORIZED,
+            ErrorCode.IMAGE_BAD_REQUEST,
+            ErrorCode.IMAGE_NOT_FOUND,
+            ErrorCode._INTERNAL_SERVER_ERROR
+    })
     public ApiResponse<ImageResponseDTO.BinaryResultDto> getImageBinary(
             @AuthenticationPrincipal PrincipalDetails principal,
             @PathVariable Long imageId
@@ -106,8 +125,14 @@ public class ImageController {
     /**
      * 이미지 즐겨찾기 등록/해제 API (토큰 기반)
      */
+    @Override
     @PatchMapping("/{imageId}/favorite")
-    @Operation(summary = "이미지 즐겨찾기 등록/해제 API", description = "이미지의 즐겨찾기 상태를 변경합니다.")
+    @ApiErrorCodes({
+            ErrorCode.UNAUTHORIZED,
+            ErrorCode.IMAGE_BAD_REQUEST,
+            ErrorCode.IMAGE_MAPPING_NOT_FOUND,
+            ErrorCode._INTERNAL_SERVER_ERROR
+    })
     public ApiResponse<ImageResponseDTO.FavoriteResultDto> toggleFavorite(
             @AuthenticationPrincipal PrincipalDetails principal,
             @PathVariable Long imageId,

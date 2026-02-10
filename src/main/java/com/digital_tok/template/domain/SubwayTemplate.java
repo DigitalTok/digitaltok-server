@@ -14,12 +14,12 @@ import lombok.experimental.SuperBuilder;
 @Table(name = "subway_template")
 public class SubwayTemplate extends Template {
 
-    @Column(name = "station_name", length = 50)
+    @Column(name = "station_name", length = 10)
     private String stationName;
 
-    @Column(name = "station_name_eng", length = 50)
+    @Column(name = "station_name_eng", length = 20)
     private String stationNameEng;
 
-    @Column(name = "line_name", length = 50)
+    @Column(name = "line_name", length = 10)
     private String lineName;
 }

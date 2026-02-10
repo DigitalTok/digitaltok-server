@@ -8,6 +8,7 @@ import com.digital_tok.global.security.PrincipalDetails;
 import com.digital_tok.user.dto.UserRequestDTO;
 import com.digital_tok.user.dto.UserResponseDTO;
 import com.digital_tok.user.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +29,7 @@ public class UserController implements UserControllerDocs{
             ErrorCode.MEMBER_NOT_FOUND
     })
     public ApiResponse<String> withdraw(@AuthenticationPrincipal PrincipalDetails principal) {
-        // principal.getUserId()로 실제 토큰의 주인 ID를 가져옴
+        // principal.getUserId()로 실제 토큰의 주인 ID를 가져옴 [삭제]
         userService.withdraw(principal.getUserId());
         return ApiResponse.onSuccess(SuccessCode.OK, "회원 탈퇴가 완료되었습니다.");
     }
@@ -43,7 +44,7 @@ public class UserController implements UserControllerDocs{
             ErrorCode.MEMBER_NOT_FOUND
     })
     public ApiResponse<String> changePassword(@AuthenticationPrincipal PrincipalDetails principal,
-                                              @RequestBody UserRequestDTO.ChangePasswordDto request) {
+                                              @RequestBody @Valid UserRequestDTO.ChangePasswordDto request) {
         userService.changePassword(principal.getUserId(), request);
         return ApiResponse.onSuccess(SuccessCode.OK, "비밀번호가 성공적으로 변경되었습니다.");
     }
@@ -59,7 +60,7 @@ public class UserController implements UserControllerDocs{
             ErrorCode.MEMBER_ALREADY_REGISTERED // 409 (이미 등록된 이메일)
     })
     public ApiResponse<String> changeEmail(@AuthenticationPrincipal PrincipalDetails principal,
-                                           @RequestBody UserRequestDTO.ChangeEmailDto request) {
+                                           @RequestBody @Valid UserRequestDTO.ChangeEmailDto request) {
         userService.changeEmail(principal.getUserId(), request);
         return ApiResponse.onSuccess(SuccessCode.OK, request.getNewEmail());
     }

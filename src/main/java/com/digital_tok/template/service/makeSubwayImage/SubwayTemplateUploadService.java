@@ -5,6 +5,8 @@ import com.digital_tok.global.apiPayload.exception.GeneralException;
 import com.digital_tok.image.service.processing.EinkBinaryEncoder;
 import com.digital_tok.image.service.processing.EinkEncodingOption;
 import com.digital_tok.image.service.processing.EinkQuantizer;
+import com.digital_tok.template.dto.SubwayCreateRequestDTO;
+import com.digital_tok.template.repository.SubwayTemplateRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,7 +30,17 @@ public class SubwayTemplateUploadService { // 이미지 생성 후 S3에 업로�
     private final EinkQuantizer quantizer = new EinkQuantizer();
     private final EinkBinaryEncoder binaryEncoder = new EinkBinaryEncoder(encodingOption);
 
-    public Long createAndSaveSubwayTemplate(String nameKor, String nameEng, String lineName) {
+    private final SubwayTemplateRepository subwayTemplateRepository;
+
+    public Long createAndSaveSubwayTemplate(SubwayCreateRequestDTO request) {
+
+        String nameKor = request.getStationName();
+        String nameEng = request.getStationNameEng();
+        String lineName = request.getLineName();
+
+        if (subwayTemplateRepository.existsByStationNameAndLineName(nameKor, lineName + "호선")) {
+            throw new GeneralException(ErrorCode.TEMPLATE_ALREADY_EXISTS); // 에러 코드 추가 필요
+        }
 
         // 1. 이미지 생성
         byte[] imageBytes;

@@ -75,16 +75,13 @@ public class SubwayController implements SubwayControllerDocs{
     @Override
     @PostMapping("/subway/generate")
     @ApiErrorCodes({
+            ErrorCode.TEMPLATE_ALREADY_EXISTS, // 409 (해당 지하철역 템플릿이 이미 존재)
             ErrorCode.IMAGE_UPLOAD_FAIL,      // 500 (S3 업로드 실패)
             ErrorCode.IMAGE_TO_BINARY_ERROR   // 500 (바이너리 변환 실패)
     })
     public ApiResponse<String> createSubwayTemplate(@RequestBody @Valid SubwayCreateRequestDTO request) {
 
-        Long templateId = subwayTemplateUploadService.createAndSaveSubwayTemplate(
-                request.getStationName(),
-                request.getStationNameEng(),
-                request.getLineName()
-        );
+        Long templateId = subwayTemplateUploadService.createAndSaveSubwayTemplate(request);
 
         return ApiResponse.onSuccess(SuccessCode.OK, "성공적으로 생성되었습니다. templateId: " + templateId);
     }

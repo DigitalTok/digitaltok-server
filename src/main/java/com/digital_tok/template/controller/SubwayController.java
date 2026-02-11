@@ -76,6 +76,7 @@ public class SubwayController implements SubwayControllerDocs{
     @PostMapping("/subway/generate")
     @ApiErrorCodes({
             ErrorCode.TEMPLATE_ALREADY_EXISTS, // 409 (해당 지하철역 템플릿이 이미 존재)
+            ErrorCode.TEMPLATE_DELETE_FAIL, // 500 롤백 중 파일 삭제에 실패했을 때
             ErrorCode.IMAGE_UPLOAD_FAIL,      // 500 (S3 업로드 실패)
             ErrorCode.IMAGE_TO_BINARY_ERROR   // 500 (바이너리 변환 실패)
     })

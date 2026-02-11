@@ -19,10 +19,10 @@ public class S3UploadService {
     @Value("${spring.cloud.aws.s3.bucket}")
     private String bucket;
 
-    // 기존 메서드 (내부에서 범용 메서드 호출하도록 변경)
-    public String upload(byte[] imageBytes, String directoryPath) {
-        return upload(imageBytes, directoryPath, "png", "image/png");
-    }
+//    // 기존 메서드 (내부에서 범용 메서드 호출하도록 변경)
+//    public String upload(byte[] imageBytes, String directoryPath) {
+//        return upload(imageBytes, directoryPath, "png", "image/png");
+//    }
 
     // 확장자와 Content-Type을 지정할 수 있는 범용 업로드 메서드
     public String upload(byte[] fileBytes, String directoryPath, String extension, String contentType) {

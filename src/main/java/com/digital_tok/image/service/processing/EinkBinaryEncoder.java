@@ -37,7 +37,9 @@ public class EinkBinaryEncoder {
 
         byte[] out = new byte[expectedBytes];
 
-        // 세로 스캔: x=0..width-1, y=0..height-1 순으로 픽셀을 읽는다.
+        // scanDirection에 따라 픽셀 스캔 순서를 결정한다.
+        // - HORIZONTAL: row-major (y=0.., x=0..)
+        // - VERTICAL  : column-major (x=0.., y=0..)
         // 4픽셀(2bit*4=8bit)을 1바이트로 패킹:
         // byte = (p0<<6) | (p1<<4) | (p2<<2) | (p3)
         int outIndex = 0;

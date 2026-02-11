@@ -2,6 +2,7 @@ package com.digital_tok.global.config;
 
 import com.digital_tok.global.apiPayload.code.ApiErrorCodes;
 import com.digital_tok.global.apiPayload.code.ErrorCode;
+import io.swagger.v3.oas.models.servers.Server; // 추가됨
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.examples.Example;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import org.springframework.beans.factory.annotation.Value;
 import org.springdoc.core.customizers.OperationCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +26,9 @@ import java.util.stream.Collectors;
 
 @Configuration
 public class SwaggerConfig {
+
+    @Value("${app.server-url}")
+    private String serverUrl;
 
     @Bean
     public OpenAPI openAPI() {
@@ -40,6 +45,7 @@ public class SwaggerConfig {
         );
 
         return new OpenAPI()
+                .addServersItem(new Server().url(serverUrl).description("DigitalTok API Server"))
                 .components(components)
                 .addSecurityItem(securityRequirement)
                 .info(apiInfo());

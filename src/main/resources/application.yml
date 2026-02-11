@@ -1,3 +1,9 @@
+server:
+  forward-headers-strategy: framework # Nginx 헤더 신뢰 설정
+
+app:
+  server-url: ${SERVER_URL:http://localhost:8080}
+
 spring:
   servlet:
     multipart:

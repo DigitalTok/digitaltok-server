@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @Tag(name = "User", description = "회원 관련 API (로그인, 회원가입, 정보 수정 등)")
 public interface UserControllerDocs {
 
-    @Operation(summary = "회원 탈퇴 API By 조성하 (개발 완료)", description = "비밀번호 검증 후 회원 정보를 삭제(또는 비활성화)합니다.")
+    @Operation(summary = "회원 탈퇴 API By 이승주 (개발 완료)", description = "비밀번호 검증 후 회원 정보를 삭제(또는 비활성화)합니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "200",
@@ -43,7 +43,7 @@ public interface UserControllerDocs {
     ApiResponse<String> changeEmail(PrincipalDetails principal,
                                     @RequestBody UserRequestDTO.ChangeEmailDto request);
 
-    @Operation(summary = "내 프로필 조회 API By 조성하 (개발 완료)", description = "로그인한 유저의 프로필 정보를 반환합니다.")
+    @Operation(summary = "내 프로필 조회 API By 이승주, 조성하 (개발 완료)", description = "로그인한 유저의 프로필 정보를 반환합니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "200",

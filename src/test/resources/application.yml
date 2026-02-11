@@ -1,0 +1,61 @@
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  # 1. DB를 H2(인메모리)로 변경
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=MySQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  # 2. JPA 설정
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+    defer-datasource-initialization: true
+
+  # 3. AWS S3 설정 (가짜 값)
+  cloud:
+    aws:
+      s3:
+        bucket: test-bucket
+      region:
+        static: ap-northeast-2
+      stack:
+        auto: false
+      credentials:
+        access-key: TEST_ACCESS_KEY
+        secret-key: TEST_SECRET_KEY
+
+  # 4. 이메일 설정 (가짜 값)
+  mail:
+    host: localhost
+    port: 587
+    username: test@email.com
+    password: test_password
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
+# 5. 커스텀 설정
+storage:
+  type: s3
+
+# 6. JWT 설정 (★수정됨★)
+# 유효한 Base64 문자열로 변경 (밑줄_ 없음, +, / 사용)
+jwt:
+  # "ThisIsATestSecretKeyForDigitalTokServerProject123"를 Base64로 인코딩한 값입니다.
+  secret: VGhpc0lzQVRlc3RTZWNyZXRLZXlGb3JEaWdpdGFsVG9rU2VydmVyUHJvamVjdDEyMw==
+  access-token-validity-in-seconds: 3600
+  refresh-token-validity-in-seconds: 1209600

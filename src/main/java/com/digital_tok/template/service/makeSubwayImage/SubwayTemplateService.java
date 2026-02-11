@@ -1,5 +1,7 @@
 package com.digital_tok.template.service.makeSubwayImage;
 
+import com.digital_tok.global.apiPayload.code.ErrorCode;
+import com.digital_tok.global.apiPayload.exception.GeneralException;
 import com.digital_tok.template.domain.SubwayTemplate;
 import com.digital_tok.template.repository.SubwayTemplateRepository;
 import jakarta.transaction.Transactional;
@@ -13,6 +15,11 @@ import org.springframework.stereotype.Service;
 public class SubwayTemplateService { // 생성된 지하철 이미지를 받아서 DB에 저장
     private final SubwayTemplateRepository subwayTemplateRepository;
     public Long saveToDatabase(String nameKor, String nameEng, String lineName, String imageUrl, String dataUrl) {
+
+        // 중복 검사 로직 추가
+        if (subwayTemplateRepository.existsByStationNameAndLineName(nameKor, lineName)) {
+            throw new GeneralException(ErrorCode.TEMPLATE_ALREADY_EXISTS);
+        }
 
         SubwayTemplate subwayTemplate = SubwayTemplate.builder()
                 // 부모(Template) 필드

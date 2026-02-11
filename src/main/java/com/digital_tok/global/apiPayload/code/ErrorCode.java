@@ -36,8 +36,10 @@ public enum ErrorCode implements BaseErrorCode{
 
     // Template 관련 에러
     TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "TEMPLATE404_1", "해당 템플릿을 찾을 수 없습니다."),
-    ;
-    
+    TEMPLATE_ALREADY_EXISTS(HttpStatus.CONFLICT, "TEMPLATE409_1", "이미 생성된 지하철 역 템플릿입니다."),
+    TEMPLATE_DELETE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "TEMPLATE500_1", "롤백 중 파일 삭제에 실패했습니다.");
+
+
     private final HttpStatus status;
     private final String code;
     private final String message;

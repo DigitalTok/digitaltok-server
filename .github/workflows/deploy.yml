@@ -89,6 +89,7 @@ jobs:
           # 서버 실행 명령어
           # -Djwt.secret 옵션으로 스프링이 찾는 이름에 맞춰서 값을 직접 넣어줌
           nohup java -Duser.timezone=Asia/Seoul \
+          -Dapp.server-url='https://diring.site' \
           -Djwt.secret='${{ secrets.JWT_SECRET_KEY }}' \
           -Djwt.access-token-validity-in-seconds=1800 \
           -Djwt.refresh-token-validity-in-seconds=604800 \

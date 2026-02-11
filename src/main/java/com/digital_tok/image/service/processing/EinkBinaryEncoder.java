@@ -58,12 +58,12 @@ public class EinkBinaryEncoder {
         } else {
             // 가로 스캔: y=0..height-1, x=0..width-1
             for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x += 4) {
+                // 좌우 반전 보정: x를 오른쪽→왼쪽으로 스캔
+                for (int x = width - 4; x >= 0; x -= 4) {
                     int p0 = to2BitColorCode(quantized200x200.getRGB(x, y));
                     int p1 = to2BitColorCode(quantized200x200.getRGB(x + 1, y));
                     int p2 = to2BitColorCode(quantized200x200.getRGB(x + 2, y));
                     int p3 = to2BitColorCode(quantized200x200.getRGB(x + 3, y));
-
                     out[outIndex++] = pack4(p0, p1, p2, p3);
                 }
             }

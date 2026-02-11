@@ -149,12 +149,22 @@ public class AuthService {
 
     /**
      * 4. 이메일 중복 검사 (API용)
-     * 사용 가능한 이메일이면 통과, 중복이면 예외 발생
      */
     public void checkEmailDuplicate(String email) {
-        if (userRepository.existsByEmail(email)) {
+        // 이메일로 유저 정보 조회
+        Optional<User> user = userRepository.findByEmail(email);
+
+        if (user.isPresent()) {
+            // 탈퇴한(INACTIVE) 유저인 경우 별도 예외 처리
+            if (user.get().getStatus() == UserStatus.INACTIVE) {
+                throw new GeneralException(ErrorCode.MEMBER_INACTIVE);
+            }
+
+            // 그 외(ACTIVE, BLOCKED 등)는 이미 가입된 사용자로 처리
             throw new GeneralException(ErrorCode.MEMBER_ALREADY_REGISTERED);
         }
+
+        // user가 없으면 중복 아님 -> 통과
     }
 
     /**

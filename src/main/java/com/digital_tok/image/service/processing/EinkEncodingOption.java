@@ -18,7 +18,8 @@ public class EinkEncodingOption {
     public EinkEncodingOption() {
         this.width = DEFAULT_WIDTH;
         this.height = DEFAULT_HEIGHT;
-        this.scanDirection = ScanDirection.VERTICAL;
+        this.scanDirection = ScanDirection.HORIZONTAL;
+
     }
 
     public int getWidth() {

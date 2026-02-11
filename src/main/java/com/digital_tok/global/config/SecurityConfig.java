@@ -6,6 +6,7 @@ import com.digital_tok.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -57,6 +58,9 @@ public class SecurityConfig {
 
                 // URL별 접근 권한 설정
                 .authorizeHttpRequests(auth -> auth
+
+                        // ★ 1. Preflight(OPTIONS) 요청은 인증 없이 무조건 허용 (CORS 해결 핵심)
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/health").permitAll()
 
                         // 인증 없이 접근 가능한 경로 (로그인, 회원가입, 스웨거 등)
@@ -82,7 +86,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // 1. 허용할 프론트엔드 도메인 (운영 서버 + 로컬 개발용)
-        configuration.setAllowedOrigins(List.of("https://diring.site", "http://localhost:8080"));
+        configuration.setAllowedOrigins(List.of("https://diring.site", "https://www.diring.site", "http://localhost:8080"));
 
         // 2. 허용할 HTTP 메서드
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));

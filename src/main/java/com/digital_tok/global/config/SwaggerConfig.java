@@ -45,7 +45,7 @@ public class SwaggerConfig {
         );
 
         return new OpenAPI()
-                .addServersItem(new Server().url(serverUrl).description("DigitalTok API Server"))
+                .addServersItem(new Server().url(serverUrl).description("DiRing API Server"))
                 .components(components)
                 .addSecurityItem(securityRequirement)
                 .info(apiInfo());
@@ -53,7 +53,7 @@ public class SwaggerConfig {
 
     private Info apiInfo() {
         return new Info()
-                .title("환영합니다. DigitalTok API 명세서입니다!") // API 문서 제목
+                .title("환영합니다. DiRing API 명세서입니다!") // API 문서 제목
                 .description("DiRing 서버 API 문서입니다!" +
                         "\n 회원가입 및 로그인 해서 AccessToken 발급받고, " +
                         "Authorize에 AccessToken입력하시면 모든 API 동작 확인 가능합니다!") // 설명

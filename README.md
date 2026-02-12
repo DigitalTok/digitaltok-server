@@ -11,7 +11,7 @@
 <br>
 
 ## 🌐 Swagger API Docs
-- **URL:** [[http://3.37.213.174:8080/swagger-ui/index.html](http://3.37.213.174:8080/swagger-ui/index.html)](https://www.diring.site/swagger-ui/index.html#/)
+- **URL:** https://www.diring.site/swagger-ui/index.html#/
 
 <br>
 

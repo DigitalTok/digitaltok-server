@@ -52,7 +52,7 @@ public interface SubwayControllerDocs {
     );
 
 
-    @Operation(summary = "지하철 역 이미지 생성 및 저장 By 이정헌 (개발 완료)", description = "지하철 역 정보를 입력하면 이미지를 생성하고 DB에 저장합니다.")
+    @Operation(summary = "(ADMIN 전용) 지하철 역 이미지 생성 및 저장 By 이정헌 (개발 완료)", description = "지하철 역 정보를 입력하면 이미지를 생성하고 DB에 저장합니다. (ADMIN 전용)")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "200",

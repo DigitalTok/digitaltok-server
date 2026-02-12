@@ -16,7 +16,7 @@ import jakarta.validation.Valid;
 @Tag(name = "Device", description = "기기 관련 API (상태 조회, 연결, 해제)")
 public interface DeviceControllerDocs {
 
-    @Operation(summary = "기기 연결 API By 조성하(개발 완료)", description = "기기를 연결합니다 (NFC UID 기반).")
+    @Operation(summary = "기기 연결 API By 조성하(개발 완료)", description = "기기를 연결합니다 (NFC UID 기반). 사전에 등록된 기기만 등록할 수 있습니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "200",

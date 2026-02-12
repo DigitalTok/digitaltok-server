@@ -16,16 +16,16 @@ import lombok.experimental.SuperBuilder;
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name = "dtype")
 @Table(name = "Template")
-public class Template extends BaseEntity {
+public abstract class Template extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "template_id")
     private Long id;
 
-    @Column(name = "template_image_url")
+    @Column(name = "template_image_url", nullable = false)
     private String templateImageUrl;
 
-    @Column(name = "template_data_url")
+    @Column(name = "template_data_url", nullable = false)
     private String templateDataUrl;
 }

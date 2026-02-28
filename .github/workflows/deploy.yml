@@ -54,7 +54,7 @@ jobs:
           name: digitalTok
           path: build/libs/
 
-      # 3. Docker Hub 로그인 (새로 추가한 Secret 사용)
+      # 3. Docker Hub 로그인
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:

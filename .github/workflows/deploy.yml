@@ -77,38 +77,38 @@ jobs:
           chmod 600 private_key.pem
           
           # EC2에서 실행할 스크립트 (run.sh) 작성
-               cat <<EOF > run.sh
+          cat <<EOF > run.sh
           #!/bin/bash
           
           # 1. 최신 이미지 다운로드
-               docker pull ${{ secrets.DOCKER_USERNAME }}/digitaltok-server:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/digitaltok-server:latest
           
           # 2. 기존 실행 중인 컨테이너가 있다면 중지 및 삭제
-               docker stop digitaltok-server || true
-               docker rm digitaltok-server || true
+          docker stop digitaltok-server || true
+          docker rm digitaltok-server || true
           
           # 3. 새 컨테이너 백그라운드 실행 (-e 로 기존 Secret 주입)
           # --network host 옵션: EC2 서버의 네트워크를 그대로 사용하여 로컬 DB(3306)와 통신하기 쉽게 만듭니다.
-               docker run -d --name digitaltok-server \
-               --network host \
-               -e DB_URL='${{ secrets.DB_URL }}' \
-               -e DB_USERNAME='${{ secrets.DB_USERNAME }}' \
-               -e DB_PASSWORD='${{ secrets.DB_PASSWORD }}' \
-               -e AWS_ACCESS_KEY='${{ secrets.AWS_ACCESS_KEY }}' \
-               -e AWS_SECRET_KEY='${{ secrets.AWS_SECRET_KEY }}' \
-               -e SPRING_CLOUD_AWS_REGION_STATIC='ap-northeast-2' \
-               -e MAIL_USERNAME='${{ secrets.MAIL_USERNAME }}' \
-               -e MAIL_PASSWORD='${{ secrets.MAIL_PASSWORD }}' \
-               -e JWT_SECRET_KEY='${{ secrets.JWT_SECRET_KEY }}' \
-               -e TZ='Asia/Seoul' \
-               ${{ secrets.DOCKER_USERNAME }}/digitaltok-server:latest
+          docker run -d --name digitaltok-server \
+          --network host \
+          -e DB_URL='${{ secrets.DB_URL }}' \
+          -e DB_USERNAME='${{ secrets.DB_USERNAME }}' \
+          -e DB_PASSWORD='${{ secrets.DB_PASSWORD }}' \
+          -e AWS_ACCESS_KEY='${{ secrets.AWS_ACCESS_KEY }}' \
+          -e AWS_SECRET_KEY='${{ secrets.AWS_SECRET_KEY }}' \
+          -e SPRING_CLOUD_AWS_REGION_STATIC='ap-northeast-2' \
+          -e MAIL_USERNAME='${{ secrets.MAIL_USERNAME }}' \
+          -e MAIL_PASSWORD='${{ secrets.MAIL_PASSWORD }}' \
+          -e JWT_SECRET_KEY='${{ secrets.JWT_SECRET_KEY }}' \
+          -e TZ='Asia/Seoul' \
+          ${{ secrets.DOCKER_USERNAME }}/digitaltok-server:latest
           
           # 4. 쌓여있는 안 쓰는 옛날 도커 이미지 삭제 (EC2 용량 확보)
-               docker image prune -a -f
-               EOF
+          docker image prune -a -f
+          EOF
           
           # 스크립트 전송 및 실행
-               scp -i private_key.pem -o StrictHostKeyChecking=no run.sh $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/run.sh
-               ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST "chmod +x /home/$EC2_USERNAME/run.sh && sh /home/$EC2_USERNAME/run.sh"
+          scp -i private_key.pem -o StrictHostKeyChecking=no run.sh $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/run.sh
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST "chmod +x /home/$EC2_USERNAME/run.sh && sh /home/$EC2_USERNAME/run.sh"
                
-               rm -f private_key.pem run.sh
+          rm -f private_key.pem run.sh

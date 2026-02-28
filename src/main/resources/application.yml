@@ -1,12 +1,13 @@
 spring:
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:mysql://localhost:3307/digitaltok?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: localuser # docker-compose.yml에서 설정한 유저
+    password: localpassword # docker-compose.yml에서 설정한 비밀번호
     driver-class-name: com.mysql.cj.jdbc.Driver
+
   jpa:
     hibernate:
-      ddl-auto: update   # create는 매번 데이터를 날리므로 update 추천
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
@@ -14,7 +15,6 @@ spring:
   storage:
     type: s3
 
-  # 최신 버전에서 cloud는 spring 밑에 있어야함
   cloud:
     aws:
       s3:
@@ -26,29 +26,13 @@ spring:
       credentials:
         access-key: ${AWS_ACCESS_KEY}
         secret-key: ${AWS_SECRET_KEY}
-  #profiles:
-  #  active: prod
-  # ... ?? ?? ...
-  #  security:
-  #    oauth2:
-  #      client:
-  #        registration:
-  #          kakao:
-  #            client-authentication-method: client_secret_post
-  #            client-id: { ?? client-id }
-  #            client-secret: { ?? client-secret }
-  #            redirect-uri: http://{ ?? ec2 public ip ?? }:8080/login/oauth2/code/kakao
-  #            authorization-grant-type: authorization_code
-  #            scope: profile_nickname
-  #            client-name: Kakao
-  # ... ?? ?? ...
 
-  #이메일 서버 설정 (Gmail 예시)
+  # mail은 spring 하위로
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${MAIL_USERNAME}  # 발송할 이메일 주소
-    password: ${MAIL_PASSWORD}  # 구글 앱 비밀번호
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     properties:
       mail:
         smtp:
@@ -60,9 +44,16 @@ spring:
           timeout: 5000
           writetimeout: 5000
 
-  # JWT 설정
 jwt:
-  # 시스템 환경 변수 중 JWT_SECRET_KEY 값을 가져오고, 없으면 기본값(뒷부분)을 씁니다.
   secret: ${JWT_SECRET_KEY}
   access-token-validity-in-seconds: 3600
   refresh-token-validity-in-seconds: 1209600
+
+management:
+   endpoints:
+     web:
+       exposure:
+         include: prometheus, health, info, metrics
+   metrics:
+     tags:
+       application: digitaltok-server

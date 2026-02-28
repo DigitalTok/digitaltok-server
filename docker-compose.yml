@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: digitaltok-mysql
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: digitaltok
+      MYSQL_USER: localuser
+      MYSQL_PASSWORD: localpassword
+    volumes:
+      - ./local-mysql-data:/var/lib/mysql # 컨테이너를 지워도 데이터가 날아가지 않도록 내 컴퓨터 폴더와 연결 (영속성)

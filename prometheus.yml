@@ -1,0 +1,10 @@
+# prometheus.yml
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'digitaltok-spring-boot'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      # host.docker.internal은 Docker 컨테이너 안에서 내 컴퓨터(호스트)의 localhost를 가리키는 주소
+      - targets: ['host.docker.internal:8080']

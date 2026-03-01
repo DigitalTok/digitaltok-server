@@ -11,13 +11,15 @@ import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import com.digital_tok.global.apiPayload.code.ApiErrorCodes;
+import com.digital_tok.global.apiPayload.code.ErrorCode;
+
 import jakarta.validation.Valid;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/devices")
-@Tag(name = "Device", description = "기기 관련 API (상태 조회, 연결, 해제")
-public class DeviceController {
+@RequestMapping("/api/v1/devices")
+public class DeviceController implements DeviceControllerDocs {
 
     private final DeviceService deviceService;
 
@@ -25,7 +27,13 @@ public class DeviceController {
      * 기기 연결 API
      */
     @PostMapping
-    @Operation(summary = "기기 연결 API", description = "기기를 연결합니다(NFC UID 기반).")
+    @ApiErrorCodes({
+            ErrorCode.UNAUTHORIZED, 
+            ErrorCode.MEMBER_NOT_FOUND, 
+            ErrorCode.DEVICE_NOT_FOUND, 
+            ErrorCode.DEVICE_ALREADY_CONNECTED
+    })
+    @Override
     public ApiResponse<DeviceResponseDTO.Result> connectDevice(
             @RequestBody @Valid DeviceRequestDTO request
     ) {
@@ -37,9 +45,15 @@ public class DeviceController {
      * 기기 연결 해제 API
      */
     @DeleteMapping("/{nfcUid}")
-    @Operation(summary = "기기 연결 해제 API", description = "기기와의 연결을 해제합니다 (NFC UID 기반).")
+    @ApiErrorCodes({
+            ErrorCode.UNAUTHORIZED, 
+            ErrorCode.MEMBER_NOT_FOUND, 
+            ErrorCode.DEVICE_NOT_FOUND, 
+            ErrorCode.DEVICE_ALREADY_DISCONNECTED
+    })
+    @Override
     public ApiResponse<DeviceResponseDTO.Result> disconnectDevice(
-            @PathVariable String nfcUid
+            @PathVariable("nfcUid") String nfcUid
     ) {
         DeviceResponseDTO.Result result = deviceService.disconnectDevice(nfcUid);
         return ApiResponse.onSuccess(SuccessCode.DEVICE_DISCONNECT_SUCCESS, result);
@@ -49,9 +63,14 @@ public class DeviceController {
      * 기기 상태 조회 API
      */
     @GetMapping("/{nfcUid}")
-    @Operation(summary = "기기 상태 조회 API", description = "기기의 연결 상태를 조회합니다 (NFC UID 기반).")
+    @ApiErrorCodes({
+            ErrorCode.UNAUTHORIZED, 
+            ErrorCode.MEMBER_NOT_FOUND, 
+            ErrorCode.DEVICE_NOT_FOUND
+    })
+    @Override
     public ApiResponse<DeviceResponseDTO.Result> getDeviceStatus(
-            @PathVariable String nfcUid
+            @PathVariable("nfcUid") String nfcUid
     ) {
         DeviceResponseDTO.Result result = deviceService.getDeviceStatus(nfcUid);
         return ApiResponse.onSuccess(SuccessCode.DEVICE_STATUS_SUCCESS, result);

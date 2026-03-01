@@ -56,6 +56,7 @@ public class JwtTokenProvider {
 
         return Jwts.builder()
                 .subject(String.valueOf(userId)) // 리프레시 토큰은 유저 ID만 담음
+                .claim("userId", userId) // Refresh Token도 userId를 claim 으로 받도록 수정
                 .issuedAt(now)
                 .expiration(validity)
                 .signWith(key)

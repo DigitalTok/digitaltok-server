@@ -1,6 +1,5 @@
 package com.digital_tok.device.domain;
 
-import com.digital_tok.user.domain.TestUser;
 import com.digital_tok.global.apiPayload.exception.GeneralException;
 import com.digital_tok.global.apiPayload.code.ErrorCode;
 import com.digital_tok.user.domain.User;
@@ -19,9 +18,8 @@ public class Device {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // 기본 키에 자동 증가 설정
     @Column(name = "device_id")
     private Long id;
-    
 
-    @Column(name = "nfc_uid", length = 50, unique = true)
+    @Column(name = "nfc_uid", length = 50, unique = true, nullable = false)
     private String nfcUid;
 
     @Enumerated(EnumType.STRING)

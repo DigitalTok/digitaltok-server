@@ -14,6 +14,6 @@ import lombok.experimental.SuperBuilder;
 @Table(name = "priority_template")
 public class PriorityTemplate extends Template {
 
-    @Column(name = "priority_type", length = 50)
+    @Column(name = "priority_type", length = 50, nullable = false)
     private String priorityType;
 }

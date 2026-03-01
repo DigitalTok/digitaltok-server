@@ -1,6 +1,7 @@
 package com.digital_tok.template.repository;
 
 import com.digital_tok.template.domain.SubwayTemplate;
+import com.digital_tok.template.dto.SubwayCreateRequestDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,4 +17,5 @@ public interface SubwayTemplateRepository extends JpaRepository<SubwayTemplate, 
     // 한글이랑 영어 둘 다 검색가능
     List<SubwayTemplate> findByStationNameContainingOrStationNameEngContainingIgnoreCase(String stationName, String stationNameEng);
 
+    boolean existsByStationNameAndLineName(String stationName, String lineName);
 }

@@ -37,7 +37,9 @@ public class EinkBinaryEncoder {
 
         byte[] out = new byte[expectedBytes];
 
-        // 세로 스캔: x=0..width-1, y=0..height-1 순으로 픽셀을 읽는다.
+        // scanDirection에 따라 픽셀 스캔 순서를 결정한다.
+        // - HORIZONTAL: row-major (y=0.., x=0..)
+        // - VERTICAL  : column-major (x=0.., y=0..)
         // 4픽셀(2bit*4=8bit)을 1바이트로 패킹:
         // byte = (p0<<6) | (p1<<4) | (p2<<2) | (p3)
         int outIndex = 0;
@@ -56,12 +58,12 @@ public class EinkBinaryEncoder {
         } else {
             // 가로 스캔: y=0..height-1, x=0..width-1
             for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x += 4) {
-                    int p0 = to2BitColorCode(quantized200x200.getRGB(x, y));
-                    int p1 = to2BitColorCode(quantized200x200.getRGB(x + 1, y));
-                    int p2 = to2BitColorCode(quantized200x200.getRGB(x + 2, y));
-                    int p3 = to2BitColorCode(quantized200x200.getRGB(x + 3, y));
-
+                // 좌우 반전 보정: x를 오른쪽→왼쪽으로 스캔, 패킹 밀림 현상 해결
+                for (int x = width - 4; x >= 0; x -= 4) {
+                    int p0 = to2BitColorCode(quantized200x200.getRGB(x + 3, y));
+                    int p1 = to2BitColorCode(quantized200x200.getRGB(x + 2, y));
+                    int p2 = to2BitColorCode(quantized200x200.getRGB(x + 1, y));
+                    int p3 = to2BitColorCode(quantized200x200.getRGB(x, y));
                     out[outIndex++] = pack4(p0, p1, p2, p3);
                 }
             }

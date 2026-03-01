@@ -2,6 +2,7 @@ package com.digital_tok.image.service;
 
 import com.digital_tok.image.service.processing.*;
 import com.digital_tok.image.service.storage.StorageService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
@@ -10,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class ImageDerivationService {
 
@@ -32,7 +34,8 @@ public class ImageDerivationService {
      * 를 생성하고 각각 업로드한 URL을 반환한다.
      */
     public Result derive(InputStream originalImageStream) {
-        System.out.println("### storageService = " + storageService.getClass().getName());
+        log.debug("Start derive. storageService={}", storageService.getClass().getSimpleName());
+
         try {
             // 1) 원본 로드
             BufferedImage original = ImageIO.read(originalImageStream);
@@ -43,35 +46,16 @@ public class ImageDerivationService {
             // 2) 200x200 맞추기
             BufferedImage resized = preprocessor.to200x200(original);
 
-            // 3) 4색 양자화 (일단 디더링 OFF 권장)
+            // 3) 4색 양자화
             BufferedImage quantized =
                     quantizer.quantizeTo4Colors(resized, EinkQuantizer.DitherMode.FLOYD_STEINBERG);
-
 
             // 4) Preview PNG 생성
             byte[] previewPng = previewRenderer.renderPng(quantized);
 
-            /*
-            //디버그용)png 파일 확인
-            java.nio.file.Path outDir = java.nio.file.Paths.get("debug-output");
-            java.nio.file.Files.createDirectories(outDir);
-            java.nio.file.Path outFile = outDir.resolve("preview_" + java.util.UUID.randomUUID() + ".png");
-            java.nio.file.Files.write(outFile, previewPng);
-            System.out.println("### PREVIEW PNG SAVED: " + outFile.toAbsolutePath());*/
-
-            // 5) Eink binary 생성 (10000 bytes)
+            // 5) Eink binary 생성
             byte[] einkBinary = binaryEncoder.encode(quantized);
-            System.out.println("### BIN LEN=" + einkBinary.length);
-
-            /*
-            //debug용)binary파일 로컬에 저장
-            java.nio.file.Path outBin = outDir.resolve("eink_" + java.util.UUID.randomUUID() + ".bin");
-            java.nio.file.Files.write(outBin, einkBinary);
-            System.out.println("### BIN SAVED: " + outBin.toAbsolutePath());
-
-             */
-
-
+            log.debug("Eink binary encoded. bytes={}", einkBinary.length);
 
             // 6) 업로드
             String baseKey = "images/eink/" + UUID.randomUUID();
@@ -88,18 +72,15 @@ public class ImageDerivationService {
                     "application/octet-stream"
             );
 
+            log.info("Derive uploaded. previewUrl={}, einkDataUrl={}", previewUrl, einkDataUrl);
+
             return new Result(previewUrl, einkDataUrl);
 
         } catch (IOException e) {
+            log.error("Failed to derive eink images (IO error)", e);
             throw new IllegalStateException("Failed to derive eink images", e);
         }
     }
 
-    /**
-     * 파생 결과 DTO
-     */
-    public record Result(
-            String previewUrl,
-            String einkDataUrl
-    ) {}
+    public record Result(String previewUrl, String einkDataUrl) {}
 }

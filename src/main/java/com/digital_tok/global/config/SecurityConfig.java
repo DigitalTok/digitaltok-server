@@ -49,7 +49,8 @@ public class SecurityConfig {
                 // URL별 접근 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         // 인증 없이 접근 가능한 경로 (로그인, 회원가입, 스웨거 등)
-                        .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/health").permitAll()
+                        .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
+                                "/health", "/actuator/prometheus").permitAll()
 
                         // 그 외 모든 요청은 인증(로그인) 필요
                         .anyRequest().authenticated()

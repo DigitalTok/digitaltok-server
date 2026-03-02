@@ -1,5 +1,5 @@
 server:
-  forward-headers-strategy: framework # Nginx 헤더 신뢰 설정
+  forward-headers-strategy: framework
 
 app:
   server-url: ${SERVER_URL:http://localhost:8080}
@@ -11,9 +11,9 @@ spring:
       max-request-size: 10MB
 
   datasource:
-    url: jdbc:mysql://localhost:3307/digitaltok?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-    username: localuser # docker-compose.yml에서 설정한 유저
-    password: localpassword # docker-compose.yml에서 설정한 비밀번호
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -35,10 +35,10 @@ spring:
       stack:
         auto: false
       credentials:
+        # 기본값을 임시로 넣어 에러 방지
         access-key: ${AWS_ACCESS_KEY}
         secret-key: ${AWS_SECRET_KEY}
 
-  # mail은 spring 하위로
   mail:
     host: smtp.gmail.com
     port: 587
@@ -51,20 +51,18 @@ spring:
           starttls:
             enable: true
             required: true
-          connectiontimeout: 5000
-          timeout: 5000
-          writetimeout: 5000
 
 jwt:
+  # JWT 시크릿 키는 최소 32글자 이상의 긴 문자열이어야 합니다.
   secret: ${JWT_SECRET_KEY}
   access-token-validity-in-seconds: 3600
   refresh-token-validity-in-seconds: 1209600
 
 management:
-   endpoints:
-     web:
-       exposure:
-         include: prometheus, health, info, metrics
-   metrics:
-     tags:
-       application: digitaltok-server
+  endpoints:
+    web:
+      exposure:
+        include: prometheus, health, info, metrics
+  metrics:
+    tags:
+      application: digitaltok-server

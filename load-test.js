@@ -21,14 +21,14 @@ import http from 'k6/http';
 import { check, sleep } from 'k6';
 
 export const options = {
-    vus: 500,
+    vus: 100,
     duration: '1m',
 };
 
 export function setup() {
-    const loginUrl = 'http://localhost:8080/api/auth/login';
+    const loginUrl = 'http://localhost:8080/api/v1/auth/login';
     const payload = JSON.stringify({
-        email: 'string',  // 1. 반드시 DB에 있는 계정이어야 함
+        email: 'user@example.com',  // 1. 반드시 DB에 있는 계정이어야 함
         password: 'string',     // 2. 비밀번호가 맞는지 확인
     });
 
@@ -66,7 +66,7 @@ export default function (data) {
         return;
     }
 
-    const url = 'http://localhost:8080/api/templates/subway';
+    const url = 'http://localhost:8080/api/v1/templates/subway';
     const params = {
         headers: {
             'Authorization': `Bearer ${data.token}`,

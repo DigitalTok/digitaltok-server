@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: digitaltok-mysql
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_DATABASE: digitaltok
+      MYSQL_USER: localuser
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_PASSWORD: localpassword
+    volumes:
+      - ./local-mysql-data:/var/lib/mysql # 컨테이너를 지워도 데이터가 날아가지 않도록 내 컴퓨터 폴더와 연결 (영속성)
+
+  mysql-exporter:
+    image: prom/mysqld-exporter
+    container_name: mysql-exporter
+    environment:
+      - DATA_SOURCE_NAME=localuser:localpassword@(mysql:3306)/digitaltok
+    ports:
+      - "9104:9104"
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"

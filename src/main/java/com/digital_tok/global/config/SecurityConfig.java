@@ -61,7 +61,7 @@ public class SecurityConfig {
 
                         // ★ 1. Preflight(OPTIONS) 요청은 인증 없이 무조건 허용 (CORS 해결 핵심)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/health").permitAll()
+                        .requestMatchers("/health", "/actuator/prometheus").permitAll()
 
                         // 인증 없이 접근 가능한 경로 (로그인, 회원가입, 스웨거 등)
                         .requestMatchers("/api/v1/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()

@@ -27,25 +27,30 @@ import java.util.stream.Collectors;
 @Configuration
 public class SwaggerConfig {
 
-    @Value("${app.server-url}")
-    private String serverUrl;
+//    @Value("${app.server-url}")
+//    private String serverUrl;
 
     @Bean
     public OpenAPI openAPI() {
-        // 1. Security 스키마 설정 (JWT 토큰 방식)
+        // 1. Security 스키마 설정
         String jwt = "JWT";
         SecurityRequirement securityRequirement = new SecurityRequirement().addList(jwt);
 
-        // 2. Components 설정 (헤더에 토큰을 어떻게 담을지 정의)
+        // 2. Components 설정
         Components components = new Components().addSecuritySchemes(jwt, new SecurityScheme()
                 .name(jwt)
-                .type(SecurityScheme.Type.HTTP) // HTTP 방식
-                .scheme("bearer") // Bearer 접두사를 사용
-                .bearerFormat("JWT") // 포맷은 JWT
+                .type(SecurityScheme.Type.HTTP)
+                .scheme("bearer")
+                .bearerFormat("JWT")
         );
 
+        // [수정 포인트] 서버 리스트를 명시적으로 관리
+        Server prodServer = new Server().url("https://www.diring.site").description("Production Server");
+        Server localServer = new Server().url("http://localhost:8080").description("Local Server");
+
         return new OpenAPI()
-                .addServersItem(new Server().url(serverUrl).description("DiRing API Server"))
+                // .addServersItem 대신 .servers()를 사용하여 리스트를 통째로 넣습니다.
+                .servers(List.of(prodServer, localServer))
                 .components(components)
                 .addSecurityItem(securityRequirement)
                 .info(apiInfo());

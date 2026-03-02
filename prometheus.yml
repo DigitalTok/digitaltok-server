@@ -1,8 +1,21 @@
 global:
-  scrape_interval: 5s # 5초마다 데이터 수집
+  scrape_interval: 5s # 15초마다 데이터를 수집합니다.
 
 scrape_configs:
+  # 1. 프로메테우스 자체 모니터링
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # 2. 스프링 부트 서버 모니터링 (HTTPS 도메인 활용)
   - job_name: 'digitaltok-server'
     metrics_path: '/actuator/prometheus'
+    scheme: 'https'  # Nginx를 통해 HTTPS로 통신하므로 https 지정
     static_configs:
-      - targets: ['host.docker.internal:8080', 'localhost:8080'] # Spring 서버 주소 (network host 모드 기준)
+      - targets: ['www.diring.site'] # 기본 HTTPS 포트(443)를 사용하므로 포트 생략
+
+  # 3. MySQL 데이터베이스 모니터링
+  - job_name: 'mysql-exporter'
+    static_configs:
+      # 같은 docker-compose 안에 있으므로 컨테이너 이름으로 바로 통신 가능
+      - targets: ['mysql-exporter:9104']

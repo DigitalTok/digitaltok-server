@@ -19,7 +19,7 @@ public class Image {
     @Column(name = "image_id")
     private Long imageId;
 
-    @Column(name = "original_url", length = 2048, nullable = false)
+    @Column(name = "original_url", length = 2048)
     private String originalUrl;
 
     @Column(name = "preview_url", length = 2048)

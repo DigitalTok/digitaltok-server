@@ -54,6 +54,35 @@ public class AmazonS3Manager {
             throw new GeneralException(ErrorCode.IMAGE_UPLOAD_FAIL);
         }
     }
+
+    public String uploadFile(String keyName, byte[] fileBytes, String contentType, String extension) {
+        // 1. 저장할 경로(Key) 생성
+        String s3Key = keyName + "/" + UUID.randomUUID() + extension;
+
+        try {
+            // 2. PutObjectRequest 생성
+            PutObjectRequest req = PutObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(s3Key)
+                    .contentType(contentType)
+                    .build();
+
+            // 3. RequestBody.fromBytes()를 사용하여 업로드
+            // InputStream 대신 이미 메모리에 있는 byte[]를 그대로 사용합니다.
+            s3Client.putObject(req, RequestBody.fromBytes(fileBytes));
+
+            // 4. 업로드된 파일의 URL 반환
+            return s3Client.utilities().getUrl(GetUrlRequest.builder()
+                    .bucket(bucket)
+                    .key(s3Key)
+                    .build()).toExternalForm();
+
+        } catch (Exception e) {
+            log.error("S3 byte[] 업로드 중 에러 발생: {}", e.getMessage());
+            throw new GeneralException(ErrorCode.IMAGE_UPLOAD_FAIL);
+        }
+    }
+
     // preview/bin 파생 업로드용 (새로 추가)
     public String uploadBytes(String s3Key, byte[] bytes, String contentType) {
         try {

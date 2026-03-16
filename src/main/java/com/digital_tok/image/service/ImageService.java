@@ -5,82 +5,52 @@ import com.digital_tok.global.apiPayload.code.ErrorCode;
 import com.digital_tok.global.apiPayload.exception.GeneralException;
 import com.digital_tok.image.domain.Image;
 import com.digital_tok.image.domain.ImageMapping;
+import com.digital_tok.image.handler.ImageProcessEvent;
 import com.digital_tok.image.repository.ImageMappingRepository;
 import com.digital_tok.image.repository.ImageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.ByteArrayInputStream;
+import com.digital_tok.image.domain.ImageStatus;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class ImageService {
 
     private final ImageRepository imageRepository;
     private final ImageMappingRepository imageMappingRepository;
-    private final AmazonS3Manager s3Manager;
-    private final ImageDerivationService imageDerivationService;
+    private final ApplicationEventPublisher eventPublisher;
+//    private final AmazonS3Manager s3Manager;
+//    private final ImageDerivationService imageDerivationService;
 
     /**
      * 이미지 업로드: S3 업로드 + DB(image, image_mapping) 저장
      */
+    @Transactional
     public UploadResult uploadImage(MultipartFile file, String imageName, Long userId) {
 
         // param validation
-        if (file == null || file.isEmpty() || imageName == null || imageName.isBlank() || userId == null) {
-            throw new GeneralException(ErrorCode.IMAGE_BAD_REQUEST);
-        }
-
-        byte[] originalBytes;
-        try {
-            originalBytes = file.getBytes();
-        } catch (Exception e) {
-            log.warn("Failed to read uploaded file bytes. imageName={}, userId={}", imageName, userId, e);
-            throw new GeneralException(ErrorCode.IMAGE_UPLOAD_FAIL);
-        }
-
-        // 1) S3 업로드 (원본)
-        String originalUrl;
-        try {
-            originalUrl = s3Manager.uploadFile("images", file);
-        } catch (Exception e) {
-            log.error("S3 upload failed. imageName={}, userId={}", imageName, userId, e);
-            throw new GeneralException(ErrorCode.IMAGE_UPLOAD_FAIL);
-        }
-
-        // 2) e-ink 파생 생성 (실패해도 업로드 성공 유지: fallback 정책)
-        ImageDerivationService.Result derived;
-        try {
-            derived = imageDerivationService.derive(new ByteArrayInputStream(originalBytes));
-            log.info("Derived eink assets done. previewUrl={}, einkDataUrl={}", derived.previewUrl(), derived.einkDataUrl());
-        } catch (Exception e) {
-            // 정책: 파생 실패해도 업로드 자체는 성공시키고 fallback
-            log.warn("Derive eink assets failed. fallback to originalUrl. imageName={}, userId={}", imageName, userId, e);
-            derived = new ImageDerivationService.Result(null, null);
-            // strict 정책으로 가려면 아래 주석 해제
-            // throw new GeneralException(ErrorCode.IMAGE_DERIVE_FAIL);
-        }
+        validateParam(file, imageName, userId);
 
         LocalDateTime now = LocalDateTime.now();
 
+        // 2. Image 객체 생성
         Image image = Image.builder()
-                .originalUrl(originalUrl)
-                .previewUrl(derived.previewUrl() != null ? derived.previewUrl() : originalUrl)
-                .einkDataUrl(derived.einkDataUrl())
                 .imageName(imageName)
+                .status(ImageStatus.PENDING) // 초기 상태: PENDING
                 .createdAt(now)
                 .deletedAt(null)
                 .build();
-
         imageRepository.save(image);
 
+        // 3. ImageMapping 객체 생성
         ImageMapping mapping = ImageMapping.builder()
                 .userId(userId)
                 .image(image)
@@ -88,13 +58,84 @@ public class ImageService {
                 .savedAt(now)
                 .lastUsedAt(now)
                 .build();
-
         imageMappingRepository.save(mapping);
 
-        log.info("Saved image & mapping. imageId={}, userImageId={}, userId={}",
-                image.getImageId(), mapping.getUserImageId(), userId);
+        // 4. 비즈니스 로직(S3, Derivation)은 이벤트로 위임, 파일의 바이너리를 이벤트에 담아 보냄
+        try {
+            byte[] fileBytes = file.getBytes();
+            String fileName = file.getOriginalFilename();
+            String extension = (fileName != null && fileName.contains("."))
+                    ? fileName.substring(fileName.lastIndexOf("."))
+                    : "";
+            eventPublisher.publishEvent(new ImageProcessEvent(image.getImageId(), fileBytes, file.getContentType(), extension));
+        } catch (IOException e) {
+            throw new GeneralException(ErrorCode.IMAGE_UPLOAD_FAIL);
+        }
+
+        log.info("Image upload initialized. imageId={}, userId={}", image.getImageId(), userId);
+//        byte[] originalBytes;
+//        try {
+//            originalBytes = file.getBytes();
+//        } catch (Exception e) {
+//            log.warn("Failed to read uploaded file bytes. imageName={}, userId={}", imageName, userId, e);
+//            throw new GeneralException(ErrorCode.IMAGE_UPLOAD_FAIL);
+//        }
+//
+//        // 1) S3 업로드 (원본)
+//        String originalUrl;
+//        try {
+//            originalUrl = s3Manager.uploadFile("images", file);
+//        } catch (Exception e) {
+//            log.error("S3 upload failed. imageName={}, userId={}", imageName, userId, e);
+//            throw new GeneralException(ErrorCode.IMAGE_UPLOAD_FAIL);
+//        }
+//
+//        // 2) e-ink 파생 생성 (실패해도 업로드 성공 유지: fallback 정책)
+//        ImageDerivationService.Result derived;
+//        try {
+//            derived = imageDerivationService.derive(new ByteArrayInputStream(originalBytes));
+//            log.info("Derived eink assets done. previewUrl={}, einkDataUrl={}", derived.previewUrl(), derived.einkDataUrl());
+//        } catch (Exception e) {
+//            // 정책: 파생 실패해도 업로드 자체는 성공시키고 fallback
+//            log.warn("Derive eink assets failed. fallback to originalUrl. imageName={}, userId={}", imageName, userId, e);
+//            derived = new ImageDerivationService.Result(null, null);
+//            // strict 정책으로 가려면 아래 주석 해제
+//            // throw new GeneralException(ErrorCode.IMAGE_DERIVE_FAIL);
+//        }
+//
+//
+//        Image image = Image.builder()
+//                .originalUrl(originalUrl)
+//                .previewUrl(derived.previewUrl() != null ? derived.previewUrl() : originalUrl)
+//                .einkDataUrl(derived.einkDataUrl())
+//                .imageName(imageName)
+//                .createdAt(now)
+//                .deletedAt(null)
+//                .build();
+//
+//        imageRepository.save(image);
+//
+//        ImageMapping mapping = ImageMapping.builder()
+//                .userId(userId)
+//                .image(image)
+//                .isFavorite(false)
+//                .savedAt(now)
+//                .lastUsedAt(now)
+//                .build();
+//
+//        imageMappingRepository.save(mapping);
+//
+//        log.info("Saved image & mapping. imageId={}, userImageId={}, userId={}",
+//                image.getImageId(), mapping.getUserImageId(), userId);
 
         return new UploadResult(image, mapping);
+    }
+
+    // 이미지 validate 판단, invalide 시 Exception
+    private void validateParam(MultipartFile file, String imageName, Long userId) {
+        if (file == null || file.isEmpty() || imageName == null || imageName.isBlank() || userId == null) {
+            throw new GeneralException(ErrorCode.IMAGE_BAD_REQUEST);
+        }
     }
 
     @Transactional(readOnly = true)

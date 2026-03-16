@@ -40,8 +40,20 @@ public class Image {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    // 이미지 정합성을 위해 추가
+    @Column(name = "image_status")
+    @Enumerated(EnumType.STRING)
+    private ImageStatus status;
+
     // 지하철 템플릿 ID (FK)-삭제
 
+    // 업로드 완료 및 상태 업데이트 메서드
+    public void completeUpload(String originalUrl, String previewUrl, String einkDataUrl, ImageStatus status) {
+        this.originalUrl = originalUrl;
+        this.previewUrl = previewUrl;
+        this.einkDataUrl = einkDataUrl;
+        this.status = status;
+    }
 
     public void updatePreviewUrl(String previewUrl) {
         this.previewUrl = previewUrl;

@@ -20,7 +20,7 @@ public class AsyncConfig { // 비동기 스레드 풀 설정
         executor.setCorePoolSize(4);
 
         // 2. Max
-        executor.setMaxPoolSize(16);
+        executor.setMaxPoolSize(8);
 
         // 3. Queue: 대기열이 너무 길면 메모리가 터질 수 있음 -> 100개
         executor.setQueueCapacity(100);

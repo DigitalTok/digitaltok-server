@@ -15,6 +15,16 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      # 최대 커넥션 수: t3.micro 사양에서는 10~15 사이로...
+      maximum-pool-size: 12
+      # 커넥션 획득 대기 시간: 15초 내에 못 얻으면 에러
+      connection-timeout: 15000
+      # 풀에 유지할 최소 유휴 커넥션 수
+      minimum-idle: 10
+      # 커넥션 최대 생명 주기
+      max-lifetime: 1800000
+      pool-name: DigitalTok-HikariCP
 
   jpa:
     hibernate:

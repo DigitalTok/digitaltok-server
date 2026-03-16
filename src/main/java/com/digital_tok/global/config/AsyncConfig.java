@@ -16,14 +16,14 @@ public class AsyncConfig { // 비동기 스레드 풀 설정
     public Executor imageTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 
-        // 1. Core: vCPU가 2개이므로 2개로 고정
-        executor.setCorePoolSize(2);
+        // 1. Core
+        executor.setCorePoolSize(4);
 
-        // 2. Max: RAM 부족을 고려해 최대 4개로 제한
-        executor.setMaxPoolSize(4);
+        // 2. Max
+        executor.setMaxPoolSize(16);
 
-        // 3. Queue: 대기열이 너무 길면 메모리가 터질 수 있음 -> 30개 제한
-        executor.setQueueCapacity(30);
+        // 3. Queue: 대기열이 너무 길면 메모리가 터질 수 있음 -> 100개
+        executor.setQueueCapacity(100);
 
         // 4. Reject Policy: 큐가 꽉 차면 직접 수행하게 함
         // -> 전체적인 시스템 속도를 물리적으로 제어(Throttle)합니다.

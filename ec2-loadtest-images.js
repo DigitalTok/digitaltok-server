@@ -5,7 +5,7 @@ import { check, sleep } from 'k6';
 const binFile = open('./Redis.png', 'b');
 
 export const options = {
-    vus: 10,
+    vus: 30,
     duration: '30s',
 };
 

@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ImageUpdateService {
 
     private final ImageRepository imageRepository;
-
+    // TODO : 테스트 후 Propagation.REQUIRES_NEW 옵션으로 수정하기
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void updateImageStatus(Long id, String originalUrl, ImageDerivationService.Result derived, ImageStatus status) {
         Image image = imageRepository.findById(id)

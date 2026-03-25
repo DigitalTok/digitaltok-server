@@ -25,9 +25,9 @@ public class AsyncConfig { // 비동기 스레드 풀 설정
         // 3. Queue: 대기열이 너무 길면 메모리가 터질 수 있음 -> 100개
         executor.setQueueCapacity(100);
 
-        // 4. Reject Policy: 큐가 꽉 차면 직접 수행하게 함
-        // -> 전체적인 시스템 속도를 물리적으로 제어(Throttle)합니다.
-        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        // 4. Reject Policy: 큐가 꽉 차면 요청을 거부하고 예외를 발생시킴
+        // -> 클라이언트는 HTTP 429 (Too Many Requests)를 받고, 재시도를 할 수 있음
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
 
         executor.setThreadNamePrefix("ImgAsync-");
         executor.initialize();

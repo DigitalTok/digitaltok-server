@@ -48,6 +48,23 @@ public class GeneralExceptionHandler {
     }
 
     // 커스텀 예외에 포함되지 않는 모든 예외 처리
+    @ExceptionHandler(java.util.concurrent.RejectedExecutionException.class)
+    public ResponseEntity<ApiResponse<Object>> handleRejectedExecutionException(Exception ex, HttpServletRequest request) {
+
+        // 오류난 url과 httpMethod 가져오고
+        String url = request.getRequestURI();
+        String method = request.getMethod();
+
+        // 로그 출력
+        log.warn("[429 WARN] {} {} - {}", method, url, ex.getMessage(), ex);
+
+        BaseErrorCode code = ErrorCode.TOO_MANY_REQUESTS;
+        return ResponseEntity
+                .status(code.getStatus())
+                .body(ApiResponse.onFailure(code, null));
+
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleGeneralException(Exception ex, HttpServletRequest request) {
 

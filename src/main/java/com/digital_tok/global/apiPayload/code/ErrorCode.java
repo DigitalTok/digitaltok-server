@@ -12,6 +12,7 @@ public enum ErrorCode implements BaseErrorCode{
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "COMMON400_1", "잘못된 입력 값입니다."),
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "COMMON405_1", "허용되지 않은 메서드입니다."),
     NOT_FOUND(HttpStatus.NOT_FOUND, "COMMON404_1", "요청한 리소스를 찾을 수 없습니다."),
+    TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, "COMMON429_1", "요청이 너무 많습니다. 잠시 후 다시 시도해주세요."),
     _INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON500", "서버 에러, 관리자에게 문의하세요."),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "COMMON401", "인증되어있지 않습니다."),
     
